@@ -151,9 +151,33 @@ export function Header({
   }, [handleUrlChange]);
 
   // Memoized account display name function
-  const getAccountDisplayName = useCallback((account: Account): string => {
-    return `${account.account} (${account.currency})`;
-  }, []);
+  const getAccountDisplayName = useCallback(
+    (account: Account): string => {
+      return `${account.account} ⚪ ${account.currency}`;
+    },
+    []
+  );
+
+    const AccountDisplayWithIcon = ({ account }: { account: Account }) => {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>{account.account}</span>
+          <img
+            src={`https://cryptofonts.com/img/icons/${account.currency.toLowerCase()}.svg`}
+            alt={account.currency}
+            width={16}
+            height={16}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+          <span>{account.currency}</span>
+          <code>
+            <strong>{balance}</strong>
+          </code>
+        </div>
+      );
+    };
 
   // Memoized dropdown menu items
   const accountMenuItems: MenuProps["items"] = authorizedAccounts.map(
@@ -212,16 +236,13 @@ export function Header({
                 trigger={["click"]}
               >
                 <Button type="default" className="app-header__deposit-btn">
-                  <p>
-                    {selectedAccount
-                      ? getAccountDisplayName(selectedAccount)
-                      : "Select Account"}
-                    <div className="app-header__account-info">
-                      <div className="app-header__account-balance">
-                        {balance} {currency}
-                      </div>
-                    </div>
-                  </p>
+                  {selectedAccount ? (
+                    <AccountDisplayWithIcon account={selectedAccount} />
+                      
+                    
+                  ) : (
+                    "Select Account"
+                  )}
                 </Button>
               </Dropdown>
             ) : (

@@ -36,7 +36,7 @@
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    
+
     .anticon {
       font-size: 12px;
       margin-left: 5px;
@@ -54,12 +54,17 @@
     padding: 8px 16px;
     height: auto;
     font-size: 14px;
-    font-weight: 500;background-color: transparent;border-color: transparent;
-    color: var(--text-primary);
+    font-weight: 500;
+
+background-color: #ffffff;
+  border-color: #dddddd;
+  color: #333333; //var(--text-primary);
 
     &:hover {
-      border-color: var(--accent-color);
-      color: var(--accent-color);
+
+background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff; //var(--text-primary);
     }
   }
 
@@ -89,7 +94,7 @@
     &__account-balance {
       font-size: 14px;
     }
-    
+
     &__deposit-btn {
       padding: 6px 12px;
       font-size: 14px;
@@ -100,7 +105,7 @@
     &__account-balance {
       font-size: 18px;
     }
-    
+
     &__deposit-btn {
       padding: 6px 20px;
       font-size: 16px;
@@ -121,7 +126,7 @@
   &__theme-button {
     &.ant-btn {
       color: var(--text-secondary);
-      
+
       &:hover {
         color: var(--accent-color);
         background: var(--hover-bg);
