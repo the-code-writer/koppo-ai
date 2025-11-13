@@ -52,9 +52,9 @@ interface HeaderProps {
 export function Header({
   isLoggedIn = false,
   onLogin,
-  accountType,
+  //accountType,
   balance,
-  currency,
+  //currency,
   onDepositClick,
   onSelectedAccount,
 }: HeaderProps) {
