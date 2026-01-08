@@ -3,6 +3,10 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { BottomActionSheet } from "../BottomActionSheet";
 import { ProfileSettingsDrawer } from "../ProfileSettingsDrawer";
+import { PasswordSettingsDrawer } from "../PasswordSettingsDrawer";
+import { LinkedAccountsSettingsDrawer } from "../LinkedAccountsSettingsDrawer";
+import TwoFASettingsDrawer from "../2FASettingsDrawer";
+import TokensSettingsDrawer from "../TokensSettingsDrawer";
 
 import {
   LegacyOpenLink2pxIcon,
@@ -14,7 +18,7 @@ import {
   StandaloneGearBoldIcon,
 } from "@deriv/quill-icons";
 import "./styles.scss";
-import { DollarOutlined, HomeOutlined, LockOutlined, QrcodeOutlined, SafetyOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { DollarOutlined, HomeOutlined, LockOutlined, QrcodeOutlined, SafetyOutlined, TeamOutlined } from "@ant-design/icons";
 import { Avatar, Flex } from "antd";
 
 // Setting types
@@ -164,6 +168,11 @@ export function Settings() {
   const [currentSetting, setCurrentSetting] = useState<SettingType>(null);
   const [currentLanguage, setCurrentLanguage] = useState("en");
   const [profileDrawerVisible, setProfileDrawerVisible] = useState(false);
+  const [passwordDrawerVisible, setPasswordDrawerVisible] = useState(false);
+  const [accountsDrawerVisible, setAccountsDrawerVisible] = useState(false);
+  const [twoFADrawerVisible, setTwoFADrawerVisible] = useState(false);
+  const [tokensDrawerVisible, setTokensDrawerVisible] = useState(false);
+  const [cashierDrawerVisible, setCashierDrawerVisible] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -175,14 +184,37 @@ export function Settings() {
 
   // Open action sheet for a specific setting
   const openActionSheet = (setting: SettingType) => {
-    if (setting === "profile") {
-      setProfileDrawerVisible(true);
-      setIsActionSheetOpen(false);
-    } else {
-      setCurrentSetting(setting);
-      setIsActionSheetOpen(true);
+    console.log(setting)
+    switch (setting) {
+      case "profile":
+        setProfileDrawerVisible(true);
+        setIsActionSheetOpen(false);
+        break;
+      case "passwords":
+        setPasswordDrawerVisible(true);
+        setIsActionSheetOpen(false);
+        break;
+      case "accounts":
+        setAccountsDrawerVisible(true);
+        setIsActionSheetOpen(false);
+        break;
+      case "2fa":
+        setTwoFADrawerVisible(true);
+        setIsActionSheetOpen(false);
+        break;
+      case "tokens":
+        setTokensDrawerVisible(true);
+        setIsActionSheetOpen(false);
+        break;
+      case "cashier":
+        setCashierDrawerVisible(true);
+        setIsActionSheetOpen(false);
+        break;
+      default:
+        setCurrentSetting(setting);
+        setIsActionSheetOpen(true);
+        break;
     }
-
   };
 
   // Close action sheet
@@ -392,6 +424,32 @@ export function Settings() {
         visible={profileDrawerVisible}
         onClose={() => setProfileDrawerVisible(false)}
         user={user}
+      />
+
+      {/* Password Settings Drawer */}
+      <PasswordSettingsDrawer
+        visible={passwordDrawerVisible}
+        onClose={() => setPasswordDrawerVisible(false)}
+        user={user}
+      />
+
+      {/* Linked Accounts Settings Drawer */}
+      <LinkedAccountsSettingsDrawer
+        visible={accountsDrawerVisible}
+        onClose={() => setAccountsDrawerVisible(false)}
+        user={user}
+      />
+
+      {/* 2FA Settings Drawer */}
+      <TwoFASettingsDrawer
+        visible={twoFADrawerVisible}
+        onClose={() => setTwoFADrawerVisible(false)}
+      />
+
+      {/* Tokens Settings Drawer */}
+      <TokensSettingsDrawer
+        visible={tokensDrawerVisible}
+        onClose={() => setTokensDrawerVisible(false)}
       />
     </div>
   );

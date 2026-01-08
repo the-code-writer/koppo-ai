@@ -1,0 +1,655 @@
+.profile-settings-drawer {
+  .ant-drawer-body {
+    padding: 24px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  // 2FA Accordion Animations
+  .ant-collapse {
+    .ant-collapse-item {
+      .ant-collapse-header {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        
+        &:hover {
+          background-color: #f0f8ff;
+        }
+        
+        .ant-collapse-expand-icon {
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .ant-collapse-header-text {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          min-height: 32px;
+        }
+      }
+      
+      .ant-collapse-content {
+        .ant-collapse-content-box {
+          animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 16px;
+        }
+      }
+      
+      &.ant-collapse-item-active {
+        .ant-collapse-header {
+          background-color: #f0f8ff;
+          border-bottom: 1px solid #e6f7ff;
+        }
+      }
+    }
+  }
+
+  // Fade in animation for checkmarks
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+
+  // Slide down animation for content
+  @keyframes slideDown {
+    from { 
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+
+  .shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .profile-settings-content {
+    .profile-picture-section {
+      text-align: center;
+      margin-bottom: 24px;
+
+      .profile-picture-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+
+        .avatar-uploader {
+          .ant-upload {
+            border-radius: 50%;
+            overflow: hidden;
+          }
+        }
+
+        h5 {
+          margin: 0;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .profile-form {
+      .ant-form-item {
+        margin-bottom: 16px;
+      }
+    }
+  }
+
+  // Tokens Content Styles
+  .tokens-content {
+    .tokens-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 8px 0;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+    }
+
+    .tokens-card {
+      border-radius: 12px;
+      box-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+      border: 1px solid var(--card-border, #f0f0f0);
+      background: var(--bg-elevated, #ffffff);
+
+      .ant-card-head {
+        border-bottom: 1px solid var(--card-border, #f0f0f0);
+        background: var(--bg-secondary, #fafafa);
+
+        .ant-card-head-title {
+          color: var(--text-primary, #1a1a1a);
+          font-weight: 600;
+        }
+      }
+
+      .ant-card-body {
+        padding: 20px;
+      }
+
+      .account-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+
+        .account-icon-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .account-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+
+            &::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+              border-radius: 12px;
+            }
+
+            &.telegram-icon {
+              background: linear-gradient(135deg, #0088cc 0%, #005f8a 100%);
+              box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+            }
+
+            &.google-icon {
+              background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+              box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+            }
+
+            &.deriv-icon {
+              background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+              box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            }
+
+            .anticon {
+              color: white;
+              font-size: 24px;
+              z-index: 1;
+            }
+          }
+
+          .account-badge {
+            position: absolute;
+            top: -14px;
+            right: -14px;
+            border-radius: 50%;
+            padding: 2px;
+
+            .ant-badge-status-dot {
+              width: 12px;
+              height: 12px;
+            }
+          }
+        }
+
+        .account-status {
+          .ant-badge {
+            .ant-badge-status-text {
+              font-size: 12px;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      .account-card-body {
+        .account-title {
+          margin: 0 0 8px 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--text-primary, #1a1a1a);
+        }
+
+        .account-description {
+          font-size: 14px;
+          color: var(--text-secondary, #666);
+          line-height: 1.5;
+          margin-bottom: 16px;
+          display: block;
+        }
+
+        .account-details {
+          margin-top: 16px;
+          padding: 16px;
+          background: var(--bg-elevated, linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%));
+          border-radius: 12px;
+          border: 1px solid var(--card-border, #e9ecef);
+
+          .details-divider {
+            margin: 12px 0;
+            border-color: var(--card-border, #e9ecef);
+          }
+
+          .token-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .ant-typography {
+              margin-bottom: 0;
+            }
+
+            .ant-typography strong {
+              color: var(--text-primary, #1a1a1a);
+              font-weight: 600;
+              min-width: 80px;
+            }
+
+            .ant-typography:not(strong) {
+              color: var(--text-secondary, #666);
+            }
+
+            .ant-typography code {
+              background: var(--bg-secondary, #f5f5f5);
+              color: var(--accent-color, #1890ff);
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-size: 12px;
+            }
+          }
+
+          .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+
+            .ant-badge {
+              .ant-badge-count {
+                font-size: 11px;
+                height: 22px;
+                line-height: 22px;
+                padding: 0 8px;
+                border-radius: 11px;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+            }
+          }
+        }
+      }
+
+      .token-management {
+        .token-details {
+          .token-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .ant-typography {
+              margin-bottom: 0;
+            }
+
+            .ant-typography strong {
+              color: var(--text-primary, #1a1a1a);
+              font-weight: 600;
+              min-width: 80px;
+            }
+
+            .ant-typography:not(strong) {
+              color: var(--text-secondary, #666);
+            }
+
+            .ant-typography code {
+              background: var(--bg-secondary, #f5f5f5);
+              color: var(--accent-color, #1890ff);
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-size: 12px;
+            }
+          }
+        }
+
+        .ant-list-item {
+          border-bottom: 1px solid var(--card-border, #f0f0f0);
+          padding: 16px 0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .ant-list-item-meta-title {
+            color: var(--text-primary, #1a1a1a);
+            margin-bottom: 8px;
+          }
+
+          .ant-list-item-meta-description {
+            color: var(--text-secondary, #666);
+          }
+        }
+      }
+    }
+  }
+
+  // Security Content Styles
+  .security-content {
+    .security-card {
+      margin-bottom: 16px;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+      border: 1px solid var(--card-border, #f0f0f0);
+      background: var(--bg-elevated, #ffffff);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .ant-card-head {
+        border-bottom: 1px solid var(--card-border, #f0f0f0);
+        background: var(--bg-secondary, #fafafa);
+
+        .ant-card-head-title {
+          color: var(--text-primary, #1a1a1a);
+          font-weight: 600;
+        }
+      }
+
+      .ant-card-body {
+        padding: 20px;
+      }
+
+      .password-reset-section {
+        .ant-alert {
+          border-radius: 8px;
+          border: 1px solid var(--card-border, #d9d9d9);
+          background: var(--bg-elevated, #f6ffed);
+        }
+      }
+
+      .password-form {
+        .ant-form-item {
+          margin-bottom: 16px;
+        }
+
+        .ant-form-item-label > label {
+          color: var(--text-primary, #1a1a1a);
+          font-weight: 500;
+        }
+
+        .ant-input {
+          background: var(--bg-elevated, #ffffff);
+          border-color: var(--card-border, #d9d9d9);
+          color: var(--text-primary, #1a1a1a);
+
+          &:hover, &:focus {
+            border-color: var(--accent-color, #1890ff);
+          }
+        }
+      }
+
+      .token-management {
+        .token-details {
+          .token-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .ant-typography {
+              margin-bottom: 0;
+            }
+
+            .ant-typography strong {
+              color: var(--text-primary, #1a1a1a);
+              font-weight: 600;
+              min-width: 80px;
+            }
+
+            .ant-typography:not(strong) {
+              color: var(--text-secondary, #666);
+            }
+
+            .ant-typography code {
+              background: var(--bg-secondary, #f5f5f5);
+              color: var(--accent-color, #1890ff);
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-size: 12px;
+            }
+          }
+        }
+
+        .ant-list-item {
+          border-bottom: 1px solid var(--card-border, #f0f0f0);
+          padding: 16px 0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .ant-list-item-meta-title {
+            color: var(--text-primary, #1a1a1a);
+            margin-bottom: 8px;
+          }
+
+          .ant-list-item-meta-description {
+            color: var(--text-secondary, #666);
+          }
+        }
+      }
+    }
+  }
+
+  // Linked Accounts Card Styles
+  .linked-accounts-content {
+    .linked-accounts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 8px 0;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+    }
+
+    .linked-account-card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      &.linked {
+        border-color: #52c41a;
+        background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+      }
+
+      &.unlinked {
+        border-color: #d9d9d9;
+        background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+      }
+
+      .ant-card-body {
+        padding: 20px;
+      }
+
+      .account-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+
+        .account-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          color: white;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            border-radius: 12px;
+          }
+
+          &.telegram-icon {
+            background: linear-gradient(135deg, #0088cc 0%, #005f8a 100%);
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+          }
+
+          &.google-icon {
+            background: linear-gradient(135deg, #4285f4 0%, #1a73e8 100%);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+          }
+
+          &.deriv-icon {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+          }
+
+          .anticon {
+            color: white;
+            font-size: 24px;
+            z-index: 1;
+          }
+        }
+
+        .account-status {
+          .ant-badge {
+            .ant-badge-status-text {
+              font-size: 12px;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      .account-card-body {
+        .account-title {
+          margin: 0 0 8px 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--text-primary, #1a1a1a);
+        }
+
+        .account-description {
+          font-size: 14px;
+          color: var(--text-secondary, #666);
+          line-height: 1.5;
+          margin-bottom: 16px;
+          display: block;
+        }
+
+        .account-details {
+          margin-top: 16px;
+          padding: 16px;
+          background: var(--bg-elevated, linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%));
+          border-radius: 12px;
+          border: 1px solid var(--card-border, #e9ecef);
+
+          .details-divider {
+            margin: 12px 0;
+            border-color: var(--card-border, #e9ecef);
+          }
+
+          .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .ant-typography {
+              margin-bottom: 0;
+            }
+
+            .ant-typography strong {
+              color: var(--text-primary, #495057);
+              font-weight: 600;
+            }
+
+            .ant-typography:not(strong) {
+              color: var(--text-secondary, #666);
+            }
+          }
+
+          .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+
+            .ant-badge {
+              .ant-badge-count {
+                font-size: 11px;
+                height: 22px;
+                line-height: 22px;
+                padding: 0 8px;
+                border-radius: 11px;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

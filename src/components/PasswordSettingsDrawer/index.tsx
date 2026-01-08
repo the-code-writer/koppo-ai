@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Drawer, Form, Input, Button, Avatar, Upload, Space, Typography, Switch, Tabs, Divider, Card, Badge, Tooltip, Alert, List, Tag, Select, Collapse, Modal } from "antd";
-import { UserOutlined, LinkOutlined, GoogleOutlined, MessageOutlined, AlertFilled, WarningTwoTone, WarningFilled, CheckCircleFilled, CaretRightOutlined, WalletOutlined, WarningOutlined, MailOutlined, PhoneOutlined, SafetyOutlined, MobileOutlined, QrcodeOutlined, WhatsAppOutlined, CopyOutlined, LockOutlined } from "@ant-design/icons";
+import { UserOutlined, LinkOutlined, GoogleOutlined, MessageOutlined, AlertFilled, WarningTwoTone, WarningFilled, CheckCircleFilled, CaretRightOutlined, WalletOutlined, WarningOutlined, MailOutlined, PhoneOutlined, SafetyOutlined, MobileOutlined, QrcodeOutlined, WhatsAppOutlined, CopyOutlined } from "@ant-design/icons";
 import { User, authAPI } from '../../services/api';
 import { FileHandler } from '../../utils/FileHandler';
 import { AuthenticatorApp, QRCodeGenerator } from '../../utils/AuthenticatorApp';
@@ -13,83 +13,76 @@ import derivLogo from '../../assets/deriv-logo.svg';
 import "./styles.scss";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 
-interface PasswordSettingsDrawerProps {
+const countries = [
+  { code: '+263', flag: '🇿🇼', name: 'Zimbabwe' },
+  { code: '+1', flag: '🇺🇸', name: 'United States' },
+  { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
+  { code: '+27', flag: '🇿🇦', name: 'South Africa' },
+  { code: '+234', flag: '🇳🇬', name: 'Nigeria' },
+  { code: '+254', flag: '🇰🇪', name: 'Kenya' },
+  { code: '+256', flag: '🇺🇬', name: 'Uganda' },
+  { code: '+260', flag: '🇿🇲', name: 'Zambia' },
+  { code: '+265', flag: '🇲🇼', name: 'Malawi' },
+  { code: '+266', flag: '🇱🇸', name: 'Lesotho' },
+  { code: '+267', flag: '🇧🇼', name: 'Botswana' },
+  { code: '+268', flag: '🇸🇿', name: 'Eswatini' },
+  { code: '+290', flag: '🇸🇭', name: 'Saint Helena' },
+  { code: '+247', flag: '🇦🇨', name: 'Ascension Island' },
+];
+
+interface ProfileSettingsDrawerProps {
   visible: boolean;
   onClose: () => void;
   user: User | null;
 }
 
-export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
-  visible,
-  onClose,
-  user
-}) => {
-  // Form instance
+export function PasswordSettingsDrawer({ visible, onClose, user }: ProfileSettingsDrawerProps) {
   const [form] = Form.useForm();
-  const [passwordForm] = Form.useForm();
-
-  // State variables
   const [loading, setLoading] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [twoFactorMethod, setTwoFactorMethod] = useState<'sms' | 'whatsapp' | 'authenticator' | null>(null);
-  const [resetLoading, setResetLoading] = useState(false);
-  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
-  const [accountsDrawerVisible, setAccountsDrawerVisible] = useState(false);
-
-  // Country selection for phone
-  const [selectedCountry, setSelectedCountry] = useState({
-    code: '+1',
-    flag: '🇺🇸',
-    name: 'United States'
-  });
-  const countries = [
-    { code: '+1', flag: '🇺🇸', name: 'United States' },
-    { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
-    { code: '+91', flag: '🇮🇳', name: 'India' },
-    { code: '+86', flag: '🇨🇳', name: 'China' },
-    { code: '+81', flag: '🇯🇵', name: 'Japan' },
-    { code: '+49', flag: '🇩🇪', name: 'Germany' },
-    { code: '+33', flag: '🇫🇷', name: 'France' },
-    { code: '+61', flag: '🇦🇺', name: 'Australia' },
-    { code: '+55', flag: '🇧🇷', name: 'Brazil' },
-    { code: '+7', flag: '🇷🇺', name: 'Russia' }
-  ];
+  const [profileImageData, setProfileImageData] = useState<{
+    base64: string;
+    fileName: string;
+    fileType: string;
+  } | null>(null);
+  const [telegramLinked, setTelegramLinked] = useState(false);
+  const [googleLinked, setGoogleLinked] = useState(false);
 
   // SMS State
-  const [smsCode, setSmsCode] = useState<string[]>(['', '', '', '', '', '']);
-  const [smsVerificationCode, setSmsVerificationCode] = useState('');
-  const [smsShake, setSmsShake] = useState(false);
-  const [smsLoading, setSmsLoading] = useState(false);
+  const [smsCode, setSmsCode] = useState(['', '', '', '', '', '']);
   const [smsSetupStep, setSmsSetupStep] = useState<'setup' | 'verify'>('setup');
   const [smsSessionId, setSmsSessionId] = useState<string | null>(null);
   const [smsCodeExpiresAt, setSmsCodeExpiresAt] = useState<number | null>(null);
-  const [smsCanResend, setSmsCanResend] = useState(true);
+  const [smsResendAvailable, setSmsResendAvailable] = useState(true);
   const [smsResendCountdown, setSmsResendCountdown] = useState(0);
-  const smsInputRef = useRef<HTMLInputElement>(null);
+  const [smsLoading, setSmsLoading] = useState(false);
+  const [smsVerificationCode, setSmsVerificationCode] = useState('');
+  const [smsShake, setSmsShake] = useState(false);
 
   // WhatsApp State
-  const [whatsappCode, setWhatsappCode] = useState<string[]>(['', '', '', '', '', '']);
-  const [whatsappVerificationCode, setWhatsappVerificationCode] = useState('');
-  const [whatsappShake, setWhatsappShake] = useState(false);
-  const [whatsappLoading, setWhatsappLoading] = useState(false);
+  const [whatsappCode, setWhatsappCode] = useState(['', '', '', '', '', '']);
   const [whatsappSetupStep, setWhatsappSetupStep] = useState<'setup' | 'verify'>('setup');
   const [whatsappSessionId, setWhatsappSessionId] = useState<string | null>(null);
   const [whatsappCodeExpiresAt, setWhatsappCodeExpiresAt] = useState<number | null>(null);
-  const [whatsappCanResend, setWhatsappCanResend] = useState(true);
+  const [whatsappResendAvailable, setWhatsappResendAvailable] = useState(true);
   const [whatsappResendCountdown, setWhatsappResendCountdown] = useState(0);
-  const whatsappInputRef = useRef<HTMLInputElement>(null);
+  const [whatsappLoading, setWhatsappLoading] = useState(false);
+  const [whatsappVerificationCode, setWhatsappVerificationCode] = useState('');
+  const [whatsappShake, setWhatsappShake] = useState(false);
 
-  // Authenticator State
+  // WhatsApp Input Refs
+  const whatsappInputRef = useRef<any>(null);
+
+  // Authenticator 2FA State
+  const [authenticatorCode, setAuthenticatorCode] = useState('');
+  const [authenticatorSecret, setAuthenticatorSecret] = useState('');
+  const [authenticatorQRCode, setAuthenticatorQRCode] = useState('');
   const [authenticatorSetupStep, setAuthenticatorSetupStep] = useState<'setup' | 'verify'>('setup');
   const [authenticatorLoading, setAuthenticatorLoading] = useState(false);
   const [authenticatorVerificationCode, setAuthenticatorVerificationCode] = useState('');
   const [authenticatorShake, setAuthenticatorShake] = useState(false);
-  const [authenticatorSecret, setAuthenticatorSecret] = useState<string | null>(null);
-  const [authenticatorQRCode, setAuthenticatorQRCode] = useState<string | null>(null);
-
+  
   // Backup Codes State
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
@@ -97,147 +90,37 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
   const [backupCodesLoading, setBackupCodesLoading] = useState(false);
   const [backupCodesSetupStep, setBackupCodesSetupStep] = useState<'setup' | 'view'>('setup');
   const [backupCodesShake, setBackupCodesShake] = useState(false);
-
+  
   // Google Auth State
   const [googleAuthLoading, setGoogleAuthLoading] = useState(false);
   const [googleAuthModalVisible, setGoogleAuthModalVisible] = useState(false);
-
+  
   // Telegram Auth State
   const [telegramAuthLoading, setTelegramAuthLoading] = useState(false);
   const [telegramAuthModalVisible, setTelegramAuthModalVisible] = useState(false);
-
+  
   // Deriv Auth State
   const [derivAuthLoading, setDerivAuthLoading] = useState(false);
   const [derivAuthModalVisible, setDerivAuthModalVisible] = useState(false);
-
-  // Tokens State
-  const [activeTokens, setActiveTokens] = useState<any[]>([]);
-
-  // Effects
-  useEffect(() => {
-    if (visible && user) {
-      form.setFieldsValue({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        displayName: user.displayName,
-        username: user.username,
-        email: user.email,
-        phoneNumber: user.phoneNumber
-      });
-    }
-  }, [visible, user, form]);
-
-  // Countdown timer effect for SMS codes
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (smsCodeExpiresAt && Date.now() < smsCodeExpiresAt) {
-      interval = setInterval(() => {
-        const now = Date.now();
-        if (now >= smsCodeExpiresAt) {
-          setSmsCanResend(true);
-          setSmsResendCountdown(0);
-          clearInterval(interval);
-        } else {
-          const remaining = Math.ceil((smsCodeExpiresAt - now) / 1000);
-          setSmsResendCountdown(remaining);
-        }
-      }, 1000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [smsCodeExpiresAt]);
-
-  // Countdown timer effect for WhatsApp codes
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (whatsappCodeExpiresAt && Date.now() < whatsappCodeExpiresAt) {
-      interval = setInterval(() => {
-        const now = Date.now();
-        if (now >= whatsappCodeExpiresAt) {
-          setWhatsappCanResend(true);
-          setWhatsappResendCountdown(0);
-          clearInterval(interval);
-        } else {
-          const remaining = Math.ceil((whatsappCodeExpiresAt - now) / 1000);
-          setWhatsappResendCountdown(remaining);
-        }
-      }, 1000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [whatsappCodeExpiresAt]);
-
-  // Event handlers
-  const handleUpdateProfile = async (values: any) => {
-    setLoading(true);
-    try {
-      // Update profile logic here
-      console.log('Updating profile:', values);
-      alert('Profile updated successfully!');
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      alert('Failed to update profile. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCustomUpload = async (options: any) => {
-    const { file } = options;
-    try {
-      // Handle file upload logic here
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Failed to upload file:', error);
-    }
-  };
-
-  const handleSendPasswordReset = async () => {
-    setResetLoading(true);
-    try {
-      // Send password reset logic here
-      console.log('Sending password reset link');
-      alert('Password reset link sent to your email!');
-    } catch (error) {
-      console.error('Failed to send password reset:', error);
-      alert('Failed to send password reset. Please try again.');
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
-  const handleChangePassword = async (values: any) => {
-    setChangePasswordLoading(true);
-    try {
-      // Change password logic here
-      console.log('Changing password:', values);
-      alert('Password changed successfully!');
-      passwordForm.resetFields();
-    } catch (error) {
-      console.error('Failed to change password:', error);
-      alert('Failed to change password. Please try again.');
-    } finally {
-      setChangePasswordLoading(false);
-    }
-  };
-
-  // SMS Functions
+  
+  // Connected Accounts Drawer State
+  const [accountsDrawerVisible, setAccountsDrawerVisible] = useState(false);
+  
+  // 2FA State
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<'sms' | 'whatsapp' | 'authenticator' | null>(null);
+  const [active2FAKey, setActive2FAKey] = useState<string | string[]>([]);
+  
+  // SMS Input Refs
+  const smsInputRef = useRef<any>(null);
+  
+  // SMS Code Handlers
   const handleSMSCodeChange = (index: number, value: string) => {
     const newCode = [...smsCode];
     const previousValue = newCode[index];
     newCode[index] = value.replace(/\D/g, '');
     setSmsCode(newCode);
-
+    
     // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`sms-input-${index + 1}`);
@@ -245,7 +128,7 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
         (nextInput as HTMLInputElement).focus();
       }
     }
-
+    
     // Auto-verify only when:
     // 1. User is typing in the last box (index 5)
     // 2. The value is not empty
@@ -260,10 +143,9 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
       }, 100);
     }
   };
-
+  
   const handleSMSCodeKeyDown = (index: number, key: string) => {
     if (key === 'Backspace' && !smsCode[index] && index > 0) {
-      // Focus previous input on backspace if current is empty
       const prevInput = document.getElementById(`sms-input-${index - 1}`);
       if (prevInput) {
         (prevInput as HTMLInputElement).focus();
@@ -271,98 +153,13 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
     }
   };
 
-  const handleSetupSMS = async () => {
-    setSmsLoading(true);
-    try {
-      // Generate SMS verification code
-      const sessionId = `sms_${user?.id}_${Date.now()}`;
-      const code = SMSAuthenticator.generateCode();
-      const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes
-
-      setSmsSessionId(sessionId);
-      setSmsCodeExpiresAt(expiresAt);
-      setSmsCanResend(false);
-      setSmsSetupStep('verify');
-      setSmsCode(['', '', '', '', '', '']);
-
-      // Store session
-      SMSVerificationSession.createSession(sessionId, code, expiresAt);
-
-      // Simulate sending SMS
-      await SMSAuthenticator.sendSMS(user?.phoneNumber || '', code);
-      
-      console.log('SMS verification code:', code);
-      console.log('Code expires at:', new Date(expiresAt).toLocaleString());
-    } catch (error) {
-      console.error('Failed to setup SMS:', error);
-      alert('Failed to send SMS verification. Please try again.');
-    } finally {
-      setSmsLoading(false);
-    }
-  };
-
-  const handleVerifySMS = async () => {
-    if (!smsSessionId) return;
-
-    const fullCode = smsCode.join('');
-    if (fullCode.length !== 6) {
-      alert('Please enter all 6 digits');
-      return;
-    }
-
-    setSmsLoading(true);
-    try {
-      const isValid = SMSVerificationSession.verifyCode(smsSessionId, fullCode);
-      
-      if (isValid) {
-        console.log('✅ SMS verification successful');
-        setTwoFactorMethod('sms');
-        setTwoFactorEnabled(true);
-        setSmsSetupStep('setup');
-        setSmsCode(['', '', '', '', '', '']);
-        setSmsSessionId(null);
-        setSmsCodeExpiresAt(null);
-        alert('SMS authentication enabled successfully!');
-      } else {
-        console.log('❌ Invalid verification code');
-        setSmsShake(true);
-        setTimeout(() => setSmsShake(false), 500);
-        alert('Invalid verification code. Please try again.');
-      }
-    } catch (error) {
-      console.error('Failed to verify SMS:', error);
-      alert('Failed to verify SMS code. Please try again.');
-    } finally {
-      setSmsLoading(false);
-    }
-  };
-
-  const handleCancelSMSSetup = () => {
-    setSmsSetupStep('setup');
-    setSmsCode(['', '', '', '', '', '']);
-    setSmsSessionId(null);
-    setSmsCodeExpiresAt(null);
-    setSmsCanResend(true);
-    setSmsResendCountdown(0);
-    
-    // Clean up session
-    if (smsSessionId) {
-      SMSVerificationSession.cleanupSession(smsSessionId);
-    }
-  };
-
-  const startSMSResendCountdown = () => {
-    setSmsCanResend(false);
-    setSmsResendCountdown(60); // 60 seconds countdown
-  };
-
-  // WhatsApp Functions
+  // WhatsApp Code Handlers
   const handleWhatsAppCodeChange = (index: number, value: string) => {
     const newCode = [...whatsappCode];
     const previousValue = newCode[index];
     newCode[index] = value.replace(/\D/g, '');
     setWhatsappCode(newCode);
-
+    
     // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(`whatsapp-input-${index + 1}`);
@@ -370,7 +167,7 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
         (nextInput as HTMLInputElement).focus();
       }
     }
-
+    
     // Auto-verify only when:
     // 1. User is typing in the last box (index 5)
     // 2. The value is not empty
@@ -385,160 +182,495 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
       }, 100);
     }
   };
-
+  
   const handleWhatsAppCodeKeyDown = (index: number, key: string) => {
     if (key === 'Backspace' && !whatsappCode[index] && index > 0) {
-      // Focus previous input on backspace if current is empty
       const prevInput = document.getElementById(`whatsapp-input-${index - 1}`);
       if (prevInput) {
         (prevInput as HTMLInputElement).focus();
       }
     }
   };
+  // Connected Accounts State
+  const [connectedAccounts, setConnectedAccounts] = useState([
+    {
+      id: 'deriv_demo_001',
+      type: 'deriv',
+      name: 'Demo Account',
+      accountId: 'DRV1234567',
+      accountType: 'Demo',
+      currency: 'USD',
+      balance: 10000.00,
+      status: 'active',
+      connectedAt: '2024-01-15T10:30:00Z',
+      platform: 'Deriv'
+    },
+    {
+      id: 'deriv_real_001',
+      type: 'deriv',
+      name: 'Real Account',
+      accountId: 'DRV7654321',
+      accountType: 'Real Money',
+      currency: 'EUR',
+      balance: 2500.50,
+      status: 'active',
+      connectedAt: '2024-01-10T14:22:00Z',
+      platform: 'Deriv'
+    }
+  ]);
 
-  const handleSetupWhatsApp = async () => {
-    setWhatsappLoading(true);
-    try {
-      // Generate WhatsApp verification code
-      const sessionId = `whatsapp_${user?.id}_${Date.now()}`;
-      const code = WhatsAppAuthenticator.generateCode();
-      const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes
+  // Local state for UI controls
+  const [passwordForm] = Form.useForm();
+  const [resetLoading, setResetLoading] = useState(false);
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState({
+    code: '+263',
+    flag: '🇿🇼',
+    name: 'Zimbabwe'
+  });
+  const [activeTokens, setActiveTokens] = useState([
+    {
+      id: 'token_1',
+      name: 'Web Session - Chrome',
+      createdAt: '2024-01-05T10:30:00Z',
+      expiresAt: '2024-01-12T10:30:00Z',
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      isActive: true,
+      lastUsed: '2024-01-06T08:15:00Z'
+    },
+    {
+      id: 'token_2', 
+      name: 'Mobile App - iOS',
+      createdAt: '2024-01-03T14:20:00Z',
+      expiresAt: '2024-01-17T14:20:00Z',
+      token: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...',
+      isActive: true,
+      lastUsed: '2024-01-05T22:45:00Z'
+    }
+  ]);
 
-      setWhatsappSessionId(sessionId);
-      setWhatsappCodeExpiresAt(expiresAt);
-      setWhatsappCanResend(false);
-      setWhatsappSetupStep('verify');
-      setWhatsappCode(['', '', '', '', '', '']);
-
-      // Store session
-      WhatsAppVerificationSession.createSession(sessionId, code, expiresAt);
-
-      // Simulate sending WhatsApp message
-      await WhatsAppAuthenticator.sendWhatsAppMessage(user?.phoneNumber || '', code);
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        displayName: user.displayName,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber
+      });
       
-      console.log('WhatsApp verification code:', code);
-      console.log('Code expires at:', new Date(expiresAt).toLocaleString());
+      // Set profile image from user's photoURL if available
+      if (user.accounts?.firebase?.photoURL) {
+        setProfileImage(user.accounts.firebase.photoURL);
+      }
+    }
+  }, [user, form]);
+
+  // Real-time countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Check if SMS code has expired
+      if (smsCodeExpiresAt && smsCodeExpiresAt > 0 && Date.now() > smsCodeExpiresAt) {
+        setSmsResendAvailable(true);
+        setSmsResendCountdown(0);
+      }
+      
+      // Update SMS resend countdown
+      if (smsResendCountdown > 0) {
+        setSmsResendCountdown(prev => prev - 1);
+      }
+
+      // Check if WhatsApp code has expired
+      if (whatsappCodeExpiresAt && whatsappCodeExpiresAt > 0 && Date.now() > whatsappCodeExpiresAt) {
+        setWhatsappResendAvailable(true);
+        setWhatsappResendCountdown(0);
+      }
+      
+      // Update WhatsApp resend countdown
+      if (whatsappResendCountdown > 0) {
+        setWhatsappResendCountdown(prev => prev - 1);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [smsCodeExpiresAt, smsResendCountdown, whatsappCodeExpiresAt, whatsappResendCountdown]);
+
+  // Helper function to start resend countdown
+  const startResendCountdown = () => {
+    setSmsResendCountdown(60); // 60 seconds countdown
+    setSmsResendAvailable(false);
+  };
+
+  const handleProfileImageUpload = async (file: File) => {
+    try {
+      // Validate the file
+      if (!FileHandler.validateImageFile(file)) {
+        throw new Error('Invalid file type or size. Please upload a valid image (JPEG, PNG, GIF, WebP) under 5MB.');
+      }
+
+      // Handle file upload and convert to base64
+      const fileData = await FileHandler.handleFileUpload(file);
+      
+      // Create data URL for display
+      const dataUrl = FileHandler.createDataUrl(fileData.base64, fileData.fileType);
+      
+      // Update state
+      setProfileImage(dataUrl);
+      setProfileImageData(fileData);
+      
+      console.log('Profile image uploaded successfully:', {
+        fileName: fileData.fileName,
+        fileType: fileData.fileType,
+        base64Length: fileData.base64.length,
+        profileImageData
+      });
+      
     } catch (error) {
-      console.error('Failed to setup WhatsApp:', error);
-      alert('Failed to send WhatsApp verification. Please try again.');
-    } finally {
-      setWhatsappLoading(false);
+      console.error('Profile image upload failed:', error);
+      // You could show an error message to the user here
+      throw error;
     }
   };
 
-  const handleVerifyWhatsApp = async () => {
-    if (!whatsappSessionId) return;
-
-    const fullCode = whatsappCode.join('');
-    if (fullCode.length !== 6) {
-      alert('Please enter all 6 digits');
-      return;
-    }
-
-    setWhatsappLoading(true);
+  const handleCustomUpload = async (options: any) => {
+    const { file } = options;
+    
     try {
-      const isValid = WhatsAppVerificationSession.verifyCode(whatsappSessionId, fullCode);
+      await handleProfileImageUpload(file);
+      options.onSuccess('Upload successful');
+    } catch (error) {
+      console.error('Upload failed:', error);
+      options.onError(error);
+    }
+  };
+
+  const handleUpdateProfile = async (values: any) => {
+    setLoading(true);
+    try {
+      // Prepare profile data including image if updated
+      const profileData = {
+        ...values,
+        ...(profileImageData && {
+          profileImage: {
+            base64: profileImageData.base64,
+            fileName: profileImageData.fileName,
+            fileType: profileImageData.fileType
+          }
+        })
+      };
+
+      // TODO: Implement API call to update profile
+      console.log('Updating profile:', profileData);
       
-      if (isValid) {
-        console.log('✅ WhatsApp verification successful');
-        setTwoFactorMethod('whatsapp');
-        setTwoFactorEnabled(true);
-        setWhatsappSetupStep('setup');
-        setWhatsappCode(['', '', '', '', '', '']);
-        setWhatsappSessionId(null);
-        setWhatsappCodeExpiresAt(null);
-        alert('WhatsApp authentication enabled successfully!');
+      // If there's a profile image, log its details
+      if (profileImageData) {
+        console.log('Profile image to upload:', {
+          fileName: profileImageData.fileName,
+          fileType: profileImageData.fileType,
+          base64Size: profileImageData.base64.length
+        });
+      }
+      
+      // await authAPI.updateProfile(profileData);
+      
+      // Show success message
+      // You can use antd message here
+      console.log('Profile updated successfully');
+      
+      onClose();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      // Show error message
+      console.error('Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLinkTelegram = (checked: boolean) => {
+    setTelegramLinked(checked);
+    // TODO: Implement Telegram OAuth flow
+    console.log('Linking Telegram account:', checked);
+  };
+
+  const handleLinkGoogle = (checked: boolean) => {
+    setGoogleLinked(checked);
+    // TODO: Implement Google OAuth flow
+    console.log('Linking Google account:', checked);
+  };
+
+  // Google Auth Functions
+  const handleGoogleSignIn = async () => {
+    setGoogleAuthLoading(true);
+    try {
+      const result = await GoogleAuth.signInWithPopup();
+      
+      if (result.success && result.user) {
+        console.log('Google sign-in successful:', result.user);
+        // Get comprehensive user data
+                const userData = GoogleAuth.decodeUserData(result.user);
+                console.log('User Data:', userData);
+                
+                // Get formatted data for display
+                const formattedData = GoogleAuth.getFormattedUserData(result.user);
+                console.log('Formatted Data:', formattedData);
+        setGoogleLinked(true);
+        setGoogleAuthModalVisible(false);
+        
+        // Update user data if needed
+        alert(`Successfully connected Google account: ${result.user.email}`);
       } else {
-        console.log('❌ Invalid verification code');
-        setWhatsappShake(true);
-        setTimeout(() => setWhatsappShake(false), 500);
-        alert('Invalid verification code. Please try again.');
+        console.error('Google sign-in failed:', result.error);
+        alert(result.error || 'Failed to sign in with Google');
       }
     } catch (error) {
-      console.error('Failed to verify WhatsApp:', error);
-      alert('Failed to verify WhatsApp code. Please try again.');
+      console.error('Unexpected error during Google sign-in:', error);
+      alert('An unexpected error occurred. Please try again.');
     } finally {
-      setWhatsappLoading(false);
+      setGoogleAuthLoading(false);
     }
   };
 
-  const handleCancelWhatsAppSetup = () => {
-    setWhatsappSetupStep('setup');
-    setWhatsappCode(['', '', '', '', '', '']);
-    setWhatsappSessionId(null);
-    setWhatsappCodeExpiresAt(null);
-    setWhatsappCanResend(true);
-    setWhatsappResendCountdown(0);
-    
-    // Clean up session
-    if (whatsappSessionId) {
-      WhatsAppVerificationSession.cleanupSession(whatsappSessionId);
+  const openGoogleAuthModal = () => {
+    setGoogleAuthModalVisible(true);
+  };
+
+  // Telegram Auth Functions
+  const handleTelegramSignIn = async () => {
+    setTelegramAuthLoading(true);
+    try {
+      // Initialize Telegram Auth (you'll need to provide actual bot credentials)
+      TelegramAuth.initialize('YOUR_BOT_TOKEN', 'YOUR_BOT_USERNAME');
+      
+      // Create user data for payload
+      const userData = {
+        uid: user?.uid || 'demo_uid',
+        mid: user?.id?.toString() || 'demo_mid',
+        fid: user?.firebaseId || 'demo_fid',
+        uuid: user?.uuid || TelegramAuth.generateUUID()
+      };
+      
+      console.log('Initiating Telegram sign-in with URL...');
+      
+      // Generate auth URL and open in new tab
+      const result = TelegramAuth.authenticateWithUrl(userData);
+      
+      if (result.success) {
+        setTelegramLinked(true);
+        setTelegramAuthModalVisible(false);
+        
+        console.log('Telegram auth URL opened:', result.url);
+        alert(`Telegram authentication initiated! Check the new tab to complete the connection.`);
+      } else {
+        throw new Error(result.error);
+      }
+      
+    } catch (error: any) {
+      console.error('Telegram sign-in error:', error);
+      alert(error.message || 'Failed to initiate Telegram authentication. Please try again.');
+    } finally {
+      setTelegramAuthLoading(false);
     }
   };
 
-  const startWhatsAppResendCountdown = () => {
-    setWhatsappCanResend(false);
-    setWhatsappResendCountdown(60); // 60 seconds countdown
+  const openTelegramAuthModal = () => {
+    setTelegramAuthModalVisible(true);
   };
 
-  // Authenticator Functions
+  // Deriv Auth Functions
+  const handleDerivSignIn = async () => {
+    setDerivAuthLoading(true);
+    try {
+      // Initialize Deriv Auth with app ID 111480
+      DerivAuth.initialize('111480', window.location.origin + '/deriv/callback');
+      
+      // Create user data for payload
+      const userData = {
+        uid: user?.uid || 'demo_uid',
+        mid: user?.id?.toString() || 'demo_mid',
+        fid: user?.firebaseId || 'demo_fid',
+        uuid: user?.uuid || DerivAuth.generateUUID()
+      };
+      
+      console.log('Initiating Deriv sign-in with URL...');
+      
+      // Generate auth URL and open in new tab
+      const result = DerivAuth.authenticateWithUrl(userData);
+      
+      if (result.success) {
+        // Update connected accounts state
+        const newAccount = {
+          id: 'DRV1234567',
+          type: 'Real Money',
+          balance: 1000.50,
+          status: 'active',
+          connectedDate: new Date().toISOString()
+        };
+        setConnectedAccounts([...connectedAccounts, newAccount]);
+        setDerivAuthModalVisible(false);
+        
+        console.log('Deriv auth URL opened:', result.url);
+        alert(`Deriv authentication initiated! Check the new tab to complete the connection.`);
+      } else {
+        throw new Error(result.error);
+      }
+      
+    } catch (error: any) {
+      console.error('Deriv sign-in error:', error);
+      alert(error.message || 'Failed to initiate Deriv authentication. Please try again.');
+    } finally {
+      setDerivAuthLoading(false);
+    }
+  };
+
+  const openDerivAuthModal = () => {
+    setDerivAuthModalVisible(true);
+  };
+
+  const handleLinkDeriv = (checked: boolean) => {
+    // TODO: Implement Deriv OAuth flow
+    console.log('Linking Deriv account:', checked);
+    if (checked) {
+      // In a real implementation, this would open Deriv OAuth
+      // For now, we'll just show a placeholder
+      alert('Deriv OAuth integration coming soon!');
+    }
+  };
+
+  const handleDisconnectAccount = (accountId: string) => {
+    setConnectedAccounts(prev => prev.filter(account => account.id !== accountId));
+    console.log('Disconnected account:', accountId);
+  };
+
+  const getActiveAccountsCount = () => {
+    return connectedAccounts.filter(account => account.status === 'active').length;
+  };
+
+  const formatBalance = (balance: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency === 'USD' ? 'USD' : 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(balance);
+  };
+
+  const handleSendPasswordReset = async () => {
+    setResetLoading(true);
+    try {
+      // TODO: Implement API call to send password reset link
+      console.log('Sending password reset link');
+      // Show success message
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (values: any) => {
+    setChangePasswordLoading(true);
+    try {
+      // TODO: Implement API call to change password
+      console.log('Changing password:', {values, currentPassword: '***', newPassword: '***' });
+      passwordForm.resetFields();
+      // Show success message
+    } catch (error) {
+      console.error('Error changing password:', error);
+    } finally {
+      setChangePasswordLoading(false);
+    }
+  };
+
+  const handleRevokeToken = (tokenId: string) => {
+    setActiveTokens(prev => prev.filter(token => token.id !== tokenId));
+    // TODO: Implement API call to revoke token
+    console.log('Revoking token:', tokenId);
+  };
+
+  const handleRevokeAllTokens = () => {
+    setActiveTokens([]);
+    // TODO: Implement API call to revoke all tokens
+    console.log('Revoking all tokens');
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  const getTokenPreview = (token: string) => {
+    if (token.length <= 20) return token;
+    return token.substring(0, 10) + '...' + token.substring(token.length - 10);
+  };
+
+  const sendEmailVerificationLink = async () => {
+    const response = await authAPI.sendVerificationEmail();
+    console.log("EMAIL VERIFICATION LINK SENT RESPONSE", response);
+  }
+
   const handleSetupAuthenticator = async () => {
     setAuthenticatorLoading(true);
     try {
-      // Generate secret and QR code
+      // Generate secret key
       const secret = AuthenticatorApp.generateSecret();
-      const qrCode = QRCodeGenerator.generateQRCode(
+      setAuthenticatorSecret(secret);
+
+      // Generate QR code data
+      const qrData = AuthenticatorApp.generateQRCodeData(
         secret,
-        user?.email || '',
+        user?.email || 'user@example.com',
         'Koppo App'
       );
-      
-      setAuthenticatorSecret(secret);
-      setAuthenticatorQRCode(qrCode);
+
+      // Generate QR code image
+      const qrImage = await QRCodeGenerator.generateQRCode(qrData);
+      setAuthenticatorQRCode(qrImage);
+
+      // Move to verify step and set method
       setAuthenticatorSetupStep('verify');
-      setAuthenticatorVerificationCode('');
-      
-      console.log('Authenticator secret:', secret);
-      console.log('Current TOTP code:', AuthenticatorApp.generateTOTP(secret));
+      setTwoFactorMethod('authenticator'); // This is the key fix!
     } catch (error) {
       console.error('Failed to setup authenticator:', error);
-      alert('Failed to setup authenticator app. Please try again.');
+      alert('Failed to setup authenticator. Please try again.');
     } finally {
       setAuthenticatorLoading(false);
     }
   };
 
   const handleVerifyAuthenticator = async () => {
-    if (!authenticatorSecret) return;
-
-    const code = authenticatorVerificationCode;
-    if (code.length !== 6) {
-      alert('Please enter a 6-digit code');
+    if (!authenticatorVerificationCode || !authenticatorSecret) {
+      console.error('Missing verification code or secret');
       return;
     }
 
     setAuthenticatorLoading(true);
     try {
-      const isValid = AuthenticatorApp.verifyTOTP(authenticatorSecret, code);
-      
+      const isValid = AuthenticatorApp.verifyTOTP(
+        authenticatorSecret,
+        authenticatorVerificationCode
+      );
+
       if (isValid) {
-        console.log('✅ Authenticator verification successful');
+        // TODO: Save to backend
+        console.log('Authenticator setup successful!');
         setTwoFactorMethod('authenticator');
         setTwoFactorEnabled(true);
         setAuthenticatorSetupStep('setup');
         setAuthenticatorVerificationCode('');
-        setAuthenticatorSecret(null);
-        setAuthenticatorQRCode(null);
-        alert('Authenticator app enabled successfully!');
+        setAuthenticatorSecret('');
+        setAuthenticatorQRCode('');
       } else {
         console.error('Invalid verification code');
+        // Trigger shake effect
         setAuthenticatorShake(true);
         setTimeout(() => setAuthenticatorShake(false), 500);
         alert('Invalid verification code. Please try again.');
       }
     } catch (error) {
       console.error('Failed to verify authenticator:', error);
-      alert('Failed to verify authenticator code. Please try again.');
+      alert('Failed to verify authenticator. Please try again.');
     } finally {
       setAuthenticatorLoading(false);
     }
@@ -547,16 +679,373 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
   const handleCancelAuthenticatorSetup = () => {
     setAuthenticatorSetupStep('setup');
     setAuthenticatorVerificationCode('');
-    setAuthenticatorSecret(null);
-    setAuthenticatorQRCode(null);
+    setAuthenticatorSecret('');
+    setAuthenticatorQRCode('');
+    setTwoFactorMethod(null);
   };
 
-  const handleRefreshAuthenticator = () => {
-    if (authenticatorSecret) {
-      const currentCode = AuthenticatorApp.generateTOTP(authenticatorSecret);
-      console.log('Current TOTP code:', currentCode);
-      alert(`Current code: ${currentCode} (refreshes every 30 seconds)`);
+  const handleRefreshAuthenticator = async () => {
+    setAuthenticatorLoading(true);
+    try {
+      // Generate new secret key
+      const secret = AuthenticatorApp.generateSecret();
+      setAuthenticatorSecret(secret);
+
+      // Generate new QR code data
+      const qrData = AuthenticatorApp.generateQRCodeData(
+        secret,
+        user?.email || 'user@example.com',
+        'Koppo App'
+      );
+
+      // Generate new QR code image
+      const qrImage = await QRCodeGenerator.generateQRCode(qrData);
+      setAuthenticatorQRCode(qrImage);
+
+      // Clear verification code
+      setAuthenticatorVerificationCode('');
+      
+      console.log('Authenticator QR code refreshed successfully');
+    } catch (error) {
+      console.error('Failed to refresh authenticator:', error);
+      alert('Failed to refresh authenticator. Please try again.');
+    } finally {
+      setAuthenticatorLoading(false);
     }
+  };
+
+  // SMS Authentication Functions
+  const handleSetupSMS = async () => {
+    if (!user?.phoneNumber) {
+      console.error('No phone number available');
+      return;
+    }
+
+    setSmsLoading(true);
+    try {
+      // Validate phone number
+      if (!SMSAuthenticator.validatePhoneNumber(user.phoneNumber)) {
+        throw new Error('Invalid phone number format');
+      }
+
+      // Create SMS session
+      const sessionId = `sms_${user.id}_${Date.now()}`;
+      const session = SMSVerificationSession.getInstance();
+      const { code, expiresAt } = session.createSession(sessionId, user.phoneNumber);
+
+      // Send SMS
+      const message = SMSAuthenticator.generateSMSMessage(code, 'Koppo App');
+      const smsSent = await SMSAuthenticator.sendSMS(user.phoneNumber, message);
+
+      if (smsSent) {
+        setSmsSessionId(sessionId);
+        setSmsCodeExpiresAt(expiresAt);
+        setSmsSetupStep('verify');
+        setSmsResendAvailable(false);
+        setTwoFactorMethod('sms'); // This is the key fix!
+        
+        // Start countdown timer
+        startResendCountdown();
+        
+        // Reset SMS code inputs
+        setSmsCode(['', '', '', '', '', '']);
+        setSmsVerificationCode('');
+        
+        // Log the code to console for testing
+        console.log('🔢 SMS Verification Code:', code);
+        console.log('⏰ Code expires at:', new Date(expiresAt).toLocaleTimeString());
+        console.log('📱 Phone:', SMSAuthenticator.maskPhoneNumber(user.phoneNumber));
+        console.log('✅ SMS code sent successfully');
+      } else {
+        throw new Error('Failed to send SMS');
+      }
+    } catch (error) {
+      console.error('Failed to setup SMS:', error);
+      alert('Failed to send SMS. Please try again.');
+    } finally {
+      setSmsLoading(false);
+    }
+  };
+
+  const handleVerifySMS = async () => {
+    // Combine the 6-digit code from input fields
+    const enteredCode = smsCode.join('');
+    
+    console.log('🔍 DEBUG - Verification Attempt:');
+    console.log('📝 Entered code:', enteredCode);
+    console.log('🆔 Session ID:', smsSessionId);
+    console.log('⏰ Current time:', new Date().toLocaleTimeString());
+    console.log('⏰ Expires at:', smsCodeExpiresAt ? new Date(smsCodeExpiresAt).toLocaleTimeString() : 'Not set');
+    
+    if (!enteredCode || !smsSessionId) {
+      console.error('❌ Missing verification code or session');
+      return;
+    }
+
+    // Check if code has expired
+    if (smsCodeExpiresAt && Date.now() > smsCodeExpiresAt) {
+      console.log('⏰ Code expired at:', new Date(smsCodeExpiresAt).toLocaleTimeString());
+      console.log('🕐 Current time:', new Date().toLocaleTimeString());
+      alert('Verification code has expired. Please request a new code.');
+      return;
+    }
+
+    setSmsLoading(true);
+    try {
+      const session = SMSVerificationSession.getInstance();
+      
+      // Debug: Check if session exists
+      console.log('🔍 DEBUG - Using SMSVerificationSession singleton instance');
+      console.log('🔍 DEBUG - Session Map size before verification:', (session as any).sessions?.size || 'N/A');
+      
+      const isValid = session.verifyCode(smsSessionId, enteredCode);
+
+      console.log('🔍 DEBUG - Verification result:', isValid);
+      console.log('🔍 DEBUG - Session Map size after verification:', (session as any).sessions?.size || 'N/A');
+
+      if (isValid) {
+        // TODO: Save to backend
+        console.log('🎉 SMS authentication setup successful!');
+        setTwoFactorMethod('sms');
+        setTwoFactorEnabled(true);
+        setSmsSetupStep('setup');
+        setSmsCode(['', '', '', '', '', '']);
+        setSmsVerificationCode('');
+        setSmsSessionId('');
+        setSmsCodeExpiresAt(0);
+        setSmsResendAvailable(true);
+        setSmsResendCountdown(0);
+        
+        alert('SMS authentication enabled successfully!');
+      } else {
+        console.log('❌ Invalid verification code');
+        // Trigger shake effect
+        setSmsShake(true);
+        setTimeout(() => setSmsShake(false), 500);
+        alert('Invalid verification code. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error verifying SMS code:', error);
+      alert('Failed to verify code. Please try again.');
+    } finally {
+      setSmsLoading(false);
+    }
+  };
+
+  const handleResendSMS = async () => {
+    if (!smsSessionId || !smsResendAvailable) {
+      console.error('Cannot resend SMS: session not available or resend not allowed');
+      return;
+    }
+
+    setSmsLoading(true);
+    try {
+      const session = SMSVerificationSession.getInstance();
+      const result = session.resendCode(smsSessionId);
+
+      if (result) {
+        // Send new SMS
+        const message = SMSAuthenticator.generateSMSMessage(result.code, 'Koppo App');
+        const smsSent = await SMSAuthenticator.sendSMS(user?.phoneNumber || '', message);
+
+        if (smsSent) {
+          setSmsCodeExpiresAt(result.expiresAt);
+          setSmsResendAvailable(false);
+          setSmsVerificationCode(''); // Clear previous code
+          startResendCountdown();
+          
+          console.log('SMS resent successfully to:', SMSAuthenticator.maskPhoneNumber(user?.phoneNumber || ''));
+          alert('New verification code sent successfully!');
+        } else {
+          throw new Error('Failed to resend SMS');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to resend SMS:', error);
+      alert('Failed to resend verification code. Please try again.');
+    } finally {
+      setSmsLoading(false);
+    }
+  };
+
+  const handleCancelSMSSetup = () => {
+    setSmsSetupStep('setup');
+    setSmsVerificationCode('');
+    setSmsSessionId('');
+    setSmsCodeExpiresAt(0);
+    setSmsResendAvailable(true);
+    setSmsResendCountdown(0);
+    setTwoFactorMethod(null);
+  };
+
+  // WhatsApp Authentication Functions
+  const handleSetupWhatsApp = async () => {
+    if (!user?.phoneNumber) {
+      console.error('No phone number available');
+      return;
+    }
+
+    setWhatsappLoading(true);
+    try {
+      // Validate phone number
+      if (!WhatsAppAuthenticator.validatePhoneNumber(user.phoneNumber)) {
+        throw new Error('Invalid phone number format');
+      }
+
+      // Create WhatsApp session
+      const sessionId = `whatsapp_${user.id}_${Date.now()}`;
+      const session = WhatsAppVerificationSession.getInstance();
+      const { code, expiresAt } = session.createSession(sessionId, user.phoneNumber);
+
+      // Send WhatsApp
+      const message = WhatsAppAuthenticator.generateWhatsAppMessage(code, 'Koppo App');
+      const whatsappSent = await WhatsAppAuthenticator.sendWhatsApp(user.phoneNumber, message);
+
+      if (whatsappSent) {
+        setWhatsappSessionId(sessionId);
+        setWhatsappCodeExpiresAt(expiresAt);
+        setWhatsappSetupStep('verify');
+        setWhatsappResendAvailable(false);
+        setTwoFactorMethod('whatsapp');
+        
+        // Start countdown timer
+        startWhatsAppResendCountdown();
+        
+        // Reset WhatsApp code inputs
+        setWhatsappCode(['', '', '', '', '', '']);
+        setWhatsappVerificationCode('');
+        
+        // Log the code to console for testing
+        console.log('🔢 WhatsApp Verification Code:', code);
+        console.log('⏰ Code expires at:', new Date(expiresAt).toLocaleTimeString());
+        console.log('📱 Phone:', WhatsAppAuthenticator.maskPhoneNumber(user.phoneNumber));
+        console.log('✅ WhatsApp code sent successfully');
+      } else {
+        throw new Error('Failed to send WhatsApp');
+      }
+    } catch (error) {
+      console.error('Failed to setup WhatsApp:', error);
+      alert('Failed to send WhatsApp. Please try again.');
+    } finally {
+      setWhatsappLoading(false);
+    }
+  };
+
+  const handleVerifyWhatsApp = async () => {
+    // Combine the 6-digit code from input fields
+    const enteredCode = whatsappCode.join('');
+    
+    console.log('🔍 DEBUG - WhatsApp Verification Attempt:');
+    console.log('📝 Entered code:', enteredCode);
+    console.log('🆔 Session ID:', whatsappSessionId);
+    console.log('⏰ Current time:', new Date().toLocaleTimeString());
+    console.log('⏰ Expires at:', whatsappCodeExpiresAt ? new Date(whatsappCodeExpiresAt).toLocaleTimeString() : 'Not set');
+    
+    if (!enteredCode || !whatsappSessionId) {
+      console.error('❌ Missing verification code or session');
+      return;
+    }
+
+    // Check if code has expired
+    if (whatsappCodeExpiresAt && Date.now() > whatsappCodeExpiresAt) {
+      console.log('⏰ Code expired at:', new Date(whatsappCodeExpiresAt).toLocaleTimeString());
+      console.log('🕐 Current time:', new Date().toLocaleTimeString());
+      alert('Verification code has expired. Please request a new code.');
+      return;
+    }
+
+    setWhatsappLoading(true);
+    try {
+      const session = WhatsAppVerificationSession.getInstance();
+      
+      // Debug: Check if session exists
+      console.log('🔍 DEBUG - Using WhatsAppVerificationSession singleton instance');
+      console.log('🔍 DEBUG - Session Map size before verification:', (session as any).sessions?.size || 'N/A');
+      
+      const isValid = session.verifyCode(whatsappSessionId, enteredCode);
+
+      console.log('🔍 DEBUG - Verification result:', isValid);
+      console.log('🔍 DEBUG - Session Map size after verification:', (session as any).sessions?.size || 'N/A');
+
+      if (isValid) {
+        // TODO: Save to backend
+        console.log('🎉 WhatsApp authentication setup successful!');
+        setTwoFactorMethod('whatsapp');
+        setTwoFactorEnabled(true);
+        setWhatsappSetupStep('setup');
+        setWhatsappCode(['', '', '', '', '', '']);
+        setWhatsappVerificationCode('');
+        setWhatsappSessionId('');
+        setWhatsappCodeExpiresAt(0);
+        setWhatsappResendAvailable(true);
+        setWhatsappResendCountdown(0);
+        
+        alert('WhatsApp authentication enabled successfully!');
+      } else {
+        console.log('❌ Invalid verification code');
+        // Trigger shake effect
+        setWhatsappShake(true);
+        setTimeout(() => setWhatsappShake(false), 500);
+        alert('Invalid verification code. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error verifying WhatsApp code:', error);
+      alert('Failed to verify code. Please try again.');
+    } finally {
+      setWhatsappLoading(false);
+    }
+  };
+
+  const handleResendWhatsApp = async () => {
+    if (!whatsappSessionId || !whatsappResendAvailable) {
+      console.error('Cannot resend WhatsApp: session not available or resend not allowed');
+      return;
+    }
+
+    setWhatsappLoading(true);
+    try {
+      const session = WhatsAppVerificationSession.getInstance();
+      const result = session.resendCode(whatsappSessionId);
+
+      if (result) {
+        // Send new WhatsApp
+        const message = WhatsAppAuthenticator.generateWhatsAppMessage(result.code, 'Koppo App');
+        const whatsappSent = await WhatsAppAuthenticator.sendWhatsApp(user?.phoneNumber || '', message);
+
+        if (whatsappSent) {
+          setWhatsappCodeExpiresAt(result.expiresAt);
+          setWhatsappResendAvailable(false);
+          setWhatsappVerificationCode(''); // Clear previous code
+          startWhatsAppResendCountdown();
+          
+          console.log('WhatsApp resent successfully to:', WhatsAppAuthenticator.maskPhoneNumber(user?.phoneNumber || ''));
+          alert('New verification code sent successfully!');
+        } else {
+          throw new Error('Failed to resend WhatsApp');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to resend WhatsApp:', error);
+      alert('Failed to resend verification code. Please try again.');
+    } finally {
+      setWhatsappLoading(false);
+    }
+  };
+
+  const handleCancelWhatsAppSetup = () => {
+    setWhatsappSetupStep('setup');
+    setWhatsappVerificationCode('');
+    setWhatsappSessionId('');
+    setWhatsappCodeExpiresAt(0);
+    setWhatsappResendAvailable(true);
+    setWhatsappResendCountdown(0);
+    setTwoFactorMethod(null);
+  };
+
+  // Helper function to start WhatsApp resend countdown
+  const startWhatsAppResendCountdown = () => {
+    setWhatsappResendCountdown(60); // 60 seconds countdown
+    setWhatsappResendAvailable(false);
   };
 
   // Backup Codes Functions
@@ -582,19 +1071,6 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
     }
   };
 
-  const handleCopyBackupCodes = () => {
-    if (backupCodes.length === 0) return;
-
-    const codesText = `Koppo App Backup Codes\nGenerated: ${new Date().toLocaleString()}\n\n${backupCodes.map((code, index) => `${index + 1}. ${code}`).join('\n')}\n\nKeep these codes in a safe location. Each code can only be used once.`;
-    
-    navigator.clipboard.writeText(codesText).then(() => {
-      alert('Backup codes copied to clipboard!');
-    }).catch(err => {
-      console.error('Failed to copy backup codes:', err);
-      alert('Failed to copy backup codes. Please try again.');
-    });
-  };
-
   const handleDownloadBackupCodes = () => {
     if (backupCodes.length === 0) return;
 
@@ -604,11 +1080,26 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'koppo-backup-codes.txt';
+    a.download = `koppo-backup-codes-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    console.log('Backup codes downloaded successfully');
+  };
+
+  const handleCopyBackupCodes = () => {
+    if (backupCodes.length === 0) return;
+
+    const codesText = backupCodes.join('\n');
+    navigator.clipboard.writeText(codesText).then(() => {
+      console.log('Backup codes copied to clipboard');
+      alert('Backup codes copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy backup codes:', err);
+      alert('Failed to copy backup codes. Please try again.');
+    });
   };
 
   const handleRegenerateBackupCodes = () => {
@@ -620,181 +1111,108 @@ export const PasswordSettingsDrawer: React.FC<PasswordSettingsDrawerProps> = ({
     }
   };
 
-  // Token Management Functions
-  const getTokenPreview = (token: string) => {
-    if (!token) return '';
-    return token.substring(0, 8) + '...' + token.substring(token.length - 8);
-  };
-
-  const handleRevokeToken = async (tokenId: string) => {
-    try {
-      // Revoke token logic here
-      console.log('Revoking token:', tokenId);
-      setActiveTokens(prev => prev.filter(token => token.id !== tokenId));
-      alert('Token revoked successfully!');
-    } catch (error) {
-      console.error('Failed to revoke token:', error);
-      alert('Failed to revoke token. Please try again.');
-    }
-  };
-
-  const handleRevokeAllTokens = async () => {
-    if (confirm('Are you sure you want to revoke all active sessions? This will sign you out from all devices.')) {
-      try {
-        // Revoke all tokens logic here
-        console.log('Revoking all tokens');
-        setActiveTokens([]);
-        alert('All sessions revoked successfully!');
-      } catch (error) {
-        console.error('Failed to revoke all tokens:', error);
-        alert('Failed to revoke all tokens. Please try again.');
-      }
-    }
-  };
-
-  // Auth Functions
-  const handleGoogleSignIn = async () => {
-    setGoogleAuthLoading(true);
-    try {
-      const result = await GoogleAuth.signInWithPopup();
-      if (result.success && result.user) {
-        console.log('Google sign-in successful:', result.user);
-        alert('Google account connected successfully!');
-      }
-    } catch (error) {
-      console.error('Google sign-in failed:', error);
-      alert('Failed to connect Google account. Please try again.');
-    } finally {
-      setGoogleAuthLoading(false);
-    }
-  };
-
-  const handleTelegramSignIn = async () => {
-    setTelegramAuthLoading(true);
-    try {
-      const result = await TelegramAuth.signInWithPopup();
-      if (result.success && result.user) {
-        console.log('Telegram sign-in successful:', result.user);
-        alert('Telegram account connected successfully!');
-      }
-    } catch (error) {
-      console.error('Telegram sign-in failed:', error);
-      alert('Failed to connect Telegram account. Please try again.');
-    } finally {
-      setTelegramAuthLoading(false);
-    }
-  };
-
-  const handleDerivSignIn = async () => {
-    setDerivAuthLoading(true);
-    try {
-      const result = await DerivAuth.signInWithPopup();
-      if (result.success && result.user) {
-        console.log('Deriv sign-in successful:', result.user);
-        alert('Deriv account connected successfully!');
-      }
-    } catch (error) {
-      console.error('Deriv sign-in failed:', error);
-      alert('Failed to connect Deriv account. Please try again.');
-    } finally {
-      setDerivAuthLoading(false);
-    }
-  };
-
   return (
     <Drawer
-      title="Password Management"
+      title="My Passwords"
       placement="right"
       onClose={onClose}
       open={visible}
       width={600}
       className="profile-settings-drawer"
     >
-      <div className="password-settings-content">
-        {/* Password Reset Section */}
-        <Card className="security-card" title="Password Reset" size="small">
-          <div className="password-reset-section">
-            <Alert
-              message="Password Reset"
-              description="Send a password reset link to your email address to reset your password."
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
-            <Button 
-              type="primary" 
-              onClick={handleSendPasswordReset}
-              loading={resetLoading}
-              block
-            >
-              Send Password Reset Link
-            </Button>
-          </div>
-        </Card>
+              <div className="security-content">
+                {/* Password Reset Section */}
+                <Card className="security-card" title="Password Reset" size="small">
+                  <div className="password-reset-section">
+                    <Alert
+                      message="Password Reset"
+                      description="Send a password reset link to your email address to reset your password."
+                      type="info"
+                      showIcon
+                      style={{ marginBottom: 16 }}
+                    />
+                    <Button 
+                      type="primary" 
+                      onClick={handleSendPasswordReset}
+                      loading={resetLoading}
+                      block
+                    >
+                      Send Password Reset Link
+                    </Button>
+                  </div>
+                </Card>
 
-        {/* Change Password Section */}
-        <Card className="security-card" title="Change Password" size="small">
-          <Form
-            form={passwordForm}
-            layout="vertical"
-            onFinish={handleChangePassword}
-            className="password-form"
-          >
-            <Form.Item
-              label="Current Password"
-              name="currentPassword"
-              rules={[
-                { required: true, message: 'Please enter your current password' },
-                { min: 8, message: 'Password must be at least 8 characters' }
-              ]}
-            >
-              <Input.Password placeholder="Enter current password" />
-            </Form.Item>
+                {/* Change Password Section */}
+                <Card className="security-card" title="Change Password" size="small">
+                  <Form
+                    form={passwordForm}
+                    layout="vertical"
+                    onFinish={handleChangePassword}
+                    className="password-form"
+                  >
+                    <Form.Item
+                      label="Current Password"
+                      name="currentPassword"
+                      rules={[
+                        { required: true, message: 'Please enter your current password' },
+                        { min: 8, message: 'Password must be at least 8 characters' }
+                      ]}
+                    >
+                      <Input.Password placeholder="Enter current password" />
+                    </Form.Item>
 
-            <Form.Item
-              label="New Password"
-              name="newPassword"
-              rules={[
-                { required: true, message: 'Please enter your new password' },
-                { min: 8, message: 'Password must be at least 8 characters' },
-                { max: 128, message: 'Password must be less than 128 characters' }
-              ]}
-            >
-              <Input.Password placeholder="Enter new password" />
-            </Form.Item>
+                    <Form.Item
+                      label="New Password"
+                      name="newPassword"
+                      rules={[
+                        { required: true, message: 'Please enter your new password' },
+                        { min: 8, message: 'Password must be at least 8 characters' },
+                        { 
+                          pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                          message: 'Password must contain uppercase, lowercase, and number'
+                        }
+                      ]}
+                    >
+                      <Input.Password placeholder="Enter new password" />
+                    </Form.Item>
 
-            <Form.Item
-              label="Confirm New Password"
-              name="confirmPassword"
-              dependencies={['newPassword']}
-              rules={[
-                { required: true, message: 'Please confirm your new password' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('newPassword') === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('The two passwords do not match!'));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password placeholder="Confirm new password" />
-            </Form.Item>
+                    <Form.Item
+                      label="Confirm New Password"
+                      name="confirmPassword"
+                      dependencies={['newPassword']}
+                      rules={[
+                        { required: true, message: 'Please confirm your new password' },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('newPassword') === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('Passwords do not match'));
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input.Password placeholder="Confirm new password" />
+                    </Form.Item>
 
-            <Form.Item>
-              <Button 
-                type="primary" 
-                htmlType="submit" 
-                loading={changePasswordLoading}
-                block
-              >
-                Change Password
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-      </div>
+                    <Form.Item>
+                      <Space>
+                        <Button 
+                          type="primary" 
+                          htmlType="submit" 
+                          loading={changePasswordLoading}
+                        >
+                          Change Password
+                        </Button>
+                        <Button onClick={() => passwordForm.resetFields()}>
+                          Clear
+                        </Button>
+                      </Space>
+                    </Form.Item>
+                  </Form>
+                </Card>
+              </div>
+
     </Drawer>
   );
-};
+}
