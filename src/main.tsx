@@ -29,11 +29,14 @@ import { AppProviders } from './providers/AppProviders';
 import { router } from './router';
 import './styles/index.scss';
 import './styles/global.scss';
+import { DerivProvider } from './hooks/useDeriv.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AppProviders>
+      <DerivProvider>
       <RouterProvider router={router} />
+      </DerivProvider>
     </AppProviders>
   </React.StrictMode>,
 );

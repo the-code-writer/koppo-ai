@@ -39,7 +39,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { UserOutlined, LockOutlined, MailOutlined, ArrowLeftOutlined, PhoneOutlined, UserAddOutlined } from "@ant-design/icons";
+import { UserOutlined, LockOutlined, MailOutlined, ArrowLeftOutlined, PhoneOutlined, UserAddOutlined, GoogleOutlined } from "@ant-design/icons";
 import { authAPI, RegisterData, LoginData, ForgotPasswordData } from "../services/api";
 import logoSvg from "../assets/logo.png";
 import "../styles/login.scss";
@@ -382,6 +382,12 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    // TODO: Implement Google OAuth login
+    console.log('Google login clicked');
+    // This would typically open Google OAuth flow
   };
 
   return (
@@ -730,6 +736,16 @@ export default function LoginPage() {
                       type="default"
                       className="register-button"
                       block
+                      onClick={handleGoogleLogin}
+                      icon={<GoogleOutlined />} 
+                    >
+                      Continue with Google
+                    </Button>
+                    
+                    <Button
+                      type="default"
+                      className="register-button"
+                      block
                       onClick={() => setShowRegister(true)}
                     >
                       Register
@@ -737,9 +753,9 @@ export default function LoginPage() {
                     
                     <div style={{ textAlign: 'center' }}>
                       <Button
-                        type="link"
-                        onClick={() => setShowForgotPassword(true)}
-                        style={{ padding: 0, height: 'auto' }}
+                        type="text"
+                        block
+                        onClick={() => setShowForgotPassword(true)} 
                       >
                         Forgot password?
                       </Button>

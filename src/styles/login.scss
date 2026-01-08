@@ -151,6 +151,66 @@
     }
   }
 
+  // Dark mode input styling
+  &.dark {
+    .login-card {
+      .ant-input-affix-wrapper {
+        background-color: transparent;
+        border-color: #424242;
+        
+        .ant-input {
+          color: #ffffff !important;
+          background-color: transparent !important;
+          
+          &::placeholder {
+            color: #888888 !important;
+          }
+          
+          &:-webkit-autofill,
+          &:-webkit-autofill:hover,
+          &:-webkit-autofill:focus,
+          &:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+        
+        .ant-input-prefix {
+          color: #888888;
+        }
+      }
+
+      .ant-input {
+        color: #ffffff !important;
+        background-color: transparent !important;
+        
+        &::placeholder {
+          color: #888888 !important;
+        }
+        
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+          -webkit-text-fill-color: #ffffff !important;
+        }
+      }
+
+      .ant-select-selector {
+        background-color: transparent !important;
+        border-color: #424242 !important;
+        color: #ffffff !important;
+        
+        .ant-select-selection-item {
+          color: #ffffff !important;
+        }
+        
+        .ant-select-selection-placeholder {
+          color: #888888 !important;
+        }
+      }
+    }
+  }
+
   .forgot-password-card {
     width: 100%;
     max-width: 360px;
@@ -194,6 +254,52 @@
       margin-bottom: 24px;
       border-radius: 6px;
       width: 100%;
+    }
+  }
+
+  // Dark mode styling for forgot password card
+  &.dark {
+    .forgot-password-card {
+      .ant-input-affix-wrapper {
+        background-color: transparent;
+        border-color: #424242;
+        
+        .ant-input {
+          color: #ffffff !important;
+          background-color: transparent !important;
+          
+          &::placeholder {
+            color: #888888 !important;
+          }
+          
+          &:-webkit-autofill,
+          &:-webkit-autofill:hover,
+          &:-webkit-autofill:focus,
+          &:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+        
+        .ant-input-prefix {
+          color: #888888;
+        }
+      }
+
+      .ant-input {
+        color: #ffffff !important;
+        background-color: transparent !important;
+        
+        &::placeholder {
+          color: #888888 !important;
+        }
+        
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+          -webkit-text-fill-color: #ffffff !important;
+        }
+      }
     }
   }
 
@@ -246,9 +352,92 @@
       width: 100%;
     }
   }
+
+  // Dark mode styling for register card
+  &.dark {
+    .register-card {
+      .ant-input-affix-wrapper {
+        background-color: transparent;
+        border-color: #424242;
+        
+        .ant-input {
+          color: #ffffff !important;
+          background-color: transparent !important;
+          
+          &::placeholder {
+            color: #888888 !important;
+          }
+          
+          &:-webkit-autofill,
+          &:-webkit-autofill:hover,
+          &:-webkit-autofill:focus,
+          &:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff !important;
+          }
+        }
+        
+        .ant-input-prefix {
+          color: #888888;
+        }
+      }
+
+      .ant-input {
+        color: #ffffff !important;
+        background-color: transparent !important;
+        
+        &::placeholder {
+          color: #888888 !important;
+        }
+        
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+          -webkit-text-fill-color: #ffffff !important;
+        }
+      }
+
+      .ant-select-selector {
+        background-color: transparent !important;
+        border-color: #424242 !important;
+        color: #ffffff !important;
+        
+        .ant-select-selection-item {
+          color: #ffffff !important;
+        }
+        
+        .ant-select-selection-placeholder {
+          color: #888888 !important;
+        }
+      }
+    }
+  }
 }
 
 // Remove inner border in focused state
 .ant-input-affix-wrapper-focused .ant-input {
   box-shadow: none !important;
+}
+
+// Make autofilled input backgrounds transparent
+.ant-input-affix-wrapper input:-webkit-autofill,
+.ant-input-affix-wrapper input:-webkit-autofill:hover,
+.ant-input-affix-wrapper input:-webkit-autofill:focus,
+.ant-input-affix-wrapper input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+.ant-input:-webkit-autofill,
+.ant-input:-webkit-autofill:hover,
+.ant-input:-webkit-autofill:focus,
+.ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  transition: background-color 5000s ease-in-out 0s !important;
 }

@@ -5,7 +5,9 @@ const API_BASE_URL = 'http://localhost:3051/v1';
 
 const tokens = JSON.parse( String(localStorage.getItem('tokens')) );
 
-    console.warn("API CONFIG", tokens.access.token)
+if (tokens && tokens.access) {
+    console.warn("API CONFIG", tokens.access.token);
+}
 
 // Create axios instance with default configuration
 const api = axios.create({
@@ -13,7 +15,6 @@ const api = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${tokens.access.token}`
   },
 });
 
@@ -72,7 +73,7 @@ export interface User {
   meta: {
     status: string;
   };
-  isEmailActivated: boolean;
+  isEmailVerified: boolean;
   isActivated: boolean;
   id: string;
   uuid: string;
