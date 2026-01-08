@@ -1,0 +1,448 @@
+.home-screen {
+  padding: 0;
+  background: transparent;
+  min-height: 100vh;
+
+  // Hero Banner Section
+  .banner-card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: none;
+    overflow: hidden;
+    margin-bottom: 16px;
+
+    .ant-card-cover {
+      img {
+        width: 100%;
+        max-height: 240px;
+        object-fit: cover;
+        object-position: center;
+        filter: brightness(1);
+      }
+    }
+
+    .ant-card-body {
+      padding: 0;
+      background: linear-gradient(135deg, rgba(24, 144, 255, 0.05) 0%, rgba(24, 144, 255, 0.02) 100%);
+    }
+
+    .ant-card-meta {
+      text-align: center;
+      padding: 24px;
+
+      .ant-card-meta-title {
+        color: #005832 !important;
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        margin-bottom: 8px !important;
+        line-height: 1.2 !important;
+      }
+
+      .ant-card-meta-description {
+        font-size: 1.1rem !important;
+        color: #666 !important;
+        line-height: 1.4 !important;
+      }
+    }
+  }
+
+  // Metrics Section
+  .metrics-section {
+    padding: 0 24px;
+    margin-bottom: 32px;
+
+    .metric-card {
+      height: 140px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      margin-bottom: 16px;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      &.profit-card {
+        background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+        color: white;
+
+        .ant-statistic-title {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-statistic-content {
+          color: white !important;
+        }
+      }
+
+      &.loss-card {
+        background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+        color: white;
+
+        .ant-statistic-title {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-statistic-content {
+          color: white !important;
+        }
+      }
+
+      .metric-trend {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  // Analytics Section
+  .analytics-section {
+    padding: 0 24px;
+    margin-bottom: 32px;
+
+    .analytics-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      margin-bottom: 16px;
+      outline: 2px dotted rgba(0, 0, 0, 0.1);
+
+      .bot-item {
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .bot-avatar {
+          &.rank-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #d4af37;
+          }
+
+          &.rank-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #808080;
+          }
+
+          &.rank-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #e4a853 100%);
+            color: #8b5a2b;
+          }
+        }
+      }
+
+      .strategy-item {
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .strategy-performance {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: 8px;
+
+          .ant-progress {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+
+  // Streaks Section
+  .streaks-section {
+    padding: 0 24px;
+    margin-bottom: 32px;
+
+    .streak-card {
+      border-radius: 16px;
+      border: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      &.winning {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+        color: white;
+
+        .streak-icon {
+          color: white !important;
+        }
+
+        .ant-statistic-title {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-statistic-content {
+          color: white !important;
+        }
+      }
+
+      &.losing {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+
+        .streak-icon {
+          color: white !important;
+        }
+
+        .ant-statistic-title {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .ant-statistic-content {
+          color: white !important;
+        }
+      }
+
+      .streak-content {
+        padding: 20px;
+
+        .streak-icon {
+          font-size: 2.5rem;
+          margin-bottom: 12px;
+          color: #1890ff;
+        }
+      }
+    }
+  }
+
+  // Additional Analytics
+  .additional-analytics {
+    padding: 0 24px;
+    margin-bottom: 32px;
+
+    .overview-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      margin-bottom: 16px;
+
+      .overview-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+
+    .weekly-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      margin-bottom: 16px;
+
+      .day-performance {
+        text-align: center;
+        padding: 16px 8px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        outline: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.04);
+          border-color: rgba(0, 0, 0, 0.12);
+          outline-color: rgba(0, 0, 0, 0.06);
+          transform: translateY(-2px);
+        }
+
+        .day-profit {
+          margin-top: 8px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  // Quick Actions
+  .quick-actions {
+    padding: 0 24px 32px;
+
+    .actions-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      margin-bottom: 16px;
+
+      .ant-btn {
+        border-radius: 8px;
+        height: 40px;
+        font-weight: 500;
+
+        &.ant-btn-primary {
+          background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+          border: none;
+          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+
+          &:hover {
+            background: linear-gradient(135deg, #40a9ff 0%, #69c0ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+          }
+        }
+
+        &:not(.ant-btn-primary) {
+          background: rgba(0, 0, 0, 0.02);
+          border: 1px solid rgba(0, 0, 0, 0.06);
+          color: inherit;
+
+          &:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+            background: rgba(24, 144, 255, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .home-screen {
+    .banner-card {
+      .ant-card-cover {
+        img {
+          height: 240px;
+        }
+      }
+
+      .ant-card-meta {
+        padding: 20px 16px;
+
+        .ant-card-meta-title {
+          font-size: 1.5rem !important;
+        }
+
+        .ant-card-meta-description {
+          font-size: 1rem !important;
+        }
+      }
+    }
+
+    .metrics-section,
+    .analytics-section,
+    .streaks-section,
+    .additional-analytics,
+    .quick-actions {
+      padding: 0 16px;
+    }
+
+    .metric-card {
+      height: 120px;
+    }
+
+    .streak-content {
+      padding: 16px !important;
+
+      .streak-icon {
+        font-size: 2rem !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .home-screen {
+    .banner-card {
+      .ant-card-cover {
+        img {
+          height: 200px;
+        }
+      }
+
+      .ant-card-meta {
+        padding: 16px 12px;
+      }
+    }
+
+    .banner-title {
+      font-size: 2rem !important;
+    }
+
+    .banner-subtitle {
+      font-size: 0.9rem !important;
+    }
+
+    .day-performance {
+      padding: 12px 4px !important;
+    }
+
+    .quick-actions {
+      .actions-card {
+        .ant-btn {
+          width: 100%;
+          margin-bottom: 8px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-screen {
+  .metrics-section,
+  .analytics-section,
+  .streaks-section,
+  .additional-analytics,
+  .quick-actions {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .analytics-section {
+    animation-delay: 0.2s;
+  }
+
+  .streaks-section {
+    animation-delay: 0.4s;
+  }
+
+  .additional-analytics {
+    animation-delay: 0.6s;
+  }
+
+  .quick-actions {
+    animation-delay: 0.8s;
+  }
+}

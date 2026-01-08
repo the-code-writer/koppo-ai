@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Drawer, Form, Input, Button, Avatar, Upload, Space, Typography, Switch, Tabs, Divider, Card, Badge, Tooltip, Alert, List, Tag, Select, Collapse, Modal, Spin } from "antd";
-import { UserOutlined, LinkOutlined, GoogleOutlined, MessageOutlined, AlertFilled, WarningTwoTone, WarningFilled, CheckCircleFilled, CaretRightOutlined, WalletOutlined, WarningOutlined, MailOutlined, PhoneOutlined, SafetyOutlined, MobileOutlined, QrcodeOutlined, WhatsAppOutlined, CopyOutlined } from "@ant-design/icons";
+import { Drawer, Form, Input, Button, Avatar, Upload, Space, Typography, Switch, Tabs, Divider, Card, Badge, Tooltip, Alert, List, Tag, Select, Collapse, Modal, Spin, message } from "antd";
+import { UserOutlined, LinkOutlined, GoogleOutlined, MessageOutlined, AlertFilled, WarningTwoTone, WarningFilled, CheckCircleFilled, CaretRightOutlined, WalletOutlined, WarningOutlined, MailOutlined, PhoneOutlined, SafetyOutlined, MobileOutlined, QrcodeOutlined, WhatsAppOutlined, CopyOutlined, CameraOutlined, PlusOutlined } from "@ant-design/icons";
 import { User, authAPI } from '../../services/api';
+import { storageService } from '../../services/storage';
 import { FileHandler } from '../../utils/FileHandler';
 import { AuthenticatorApp, QRCodeGenerator } from '../../utils/AuthenticatorApp';
 import { SMSAuthenticator, SMSVerificationSession, WhatsAppAuthenticator, WhatsAppVerificationSession } from '../../utils/SMSAuthenticator';
@@ -41,6 +42,8 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [modificationRequestStatus, setModificationRequestStatus] = useState<'idle' | 'loading' | 'pending'>('idle');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   
   const handleRequestModification = () => {
     setModificationRequestStatus('loading');
@@ -49,6 +52,44 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
     setTimeout(() => {
       setModificationRequestStatus('pending');
     }, 3000);
+  };
+
+  const handlePhotoUpload = async (file: File) => {
+    // Validate file
+    const validation = storageService.validateFile(file, 5, ['image/jpeg', 'image/png', 'image/webp']);
+    if (!validation.valid) {
+      message.error(validation.error);
+      return false;
+    }
+
+    setUploadingPhoto(true);
+    
+    try {
+      const result = await storageService.uploadFile(file, 'profile', ['user-photo']);
+      
+      if (result.success && result.url) {
+        setProfilePhotoUrl(result.url);
+        message.success('Profile photo uploaded successfully!');
+        
+        // Update user profile with new photo URL
+        // This would typically call an API to update the user profile
+        console.log('Profile photo URL:', result.url);
+      } else {
+        message.error(result.error || 'Failed to upload photo');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      message.error('Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+    
+    return false; // Prevent default upload behavior
+  };
+
+  const beforeUpload = (file: File) => {
+    handlePhotoUpload(file);
+    return false; // Prevent default upload behavior
   };
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileImageData, setProfileImageData] = useState<{
@@ -1135,10 +1176,17 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
                       listType="picture-card"
                       className="avatar-uploader"
                       showUploadList={false}
-                      customRequest={handleCustomUpload}
+                      beforeUpload={beforeUpload}
                       accept="image/*"
+                      disabled={uploadingPhoto}
                     >
-                      {profileImage ? (
+                      {uploadingPhoto ? (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          <Spin size="large" />
+                        </div>
+                      ) : profilePhotoUrl ? (
+                        <Avatar src={profilePhotoUrl} size={80} />
+                      ) : profileImage ? (
                         <Avatar src={profileImage} size={80} />
                       ) : (
                         <Avatar icon={<UserOutlined />} size={80} />

@@ -7,6 +7,7 @@ import { PasswordSettingsDrawer } from "../PasswordSettingsDrawer";
 import { LinkedAccountsSettingsDrawer } from "../LinkedAccountsSettingsDrawer";
 import {TwoFASettingsDrawer} from "../2FASettingsDrawer";
 import {TokensSettingsDrawer} from "../TokensSettingsDrawer";
+import {CashierSettingsDrawer } from "../CashierSettingsDrawer";
 
 import {
   LegacyOpenLink2pxIcon,
@@ -452,6 +453,13 @@ export function Settings() {
         visible={tokensDrawerVisible}
         onClose={() => setTokensDrawerVisible(false)}
       />
+      {/* Cashier Settings Drawer */}
+      <CashierSettingsDrawer
+        visible={cashierDrawerVisible}
+        onClose={() => setCashierDrawerVisible(false)}
+      />
+
+
     </div>
   );
 }

@@ -1,0 +1,353 @@
+.deposits-withdrawals {
+  padding: 0;
+  background: transparent;
+  min-height: 100vh;
+
+  // Page Header
+  .page-header {
+    padding: 0 24px;
+    margin-bottom: 32px;
+    text-align: center;
+
+    .page-title {
+      color: #1890ff !important;
+      font-size: 2.5rem !important;
+      font-weight: 700 !important;
+      margin-bottom: 8px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+
+      .anticon {
+        font-size: 2rem;
+      }
+    }
+
+    .page-subtitle {
+      font-size: 1.1rem !important;
+      color: #666 !important;
+    }
+  }
+
+  // Statistics Section
+  .stats-section {
+    padding: 0 24px;
+    margin-bottom: 32px;
+
+    .stat-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      text-align: center;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      margin-bottom: 16px;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      .ant-statistic {
+        .ant-statistic-title {
+          font-weight: 500;
+          margin-bottom: 8px;
+        }
+
+        .ant-statistic-content {
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  // Main Card
+  .main-card {
+    margin: 0 24px 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: none;
+
+    .deposit-tabs {
+      .ant-tabs-nav {
+        margin-bottom: 32px;
+
+        .ant-tabs-tab {
+          font-size: 1rem;
+          font-weight: 500;
+          padding: 12px 24px;
+
+          &.ant-tabs-tab-active {
+            .ant-tabs-tab-btn {
+              color: #1890ff;
+              font-weight: 600;
+            }
+          }
+
+          .anticon {
+            margin-right: 8px;
+          }
+        }
+
+        .ant-tabs-ink-bar {
+          background: #1890ff;
+          height: 3px;
+        }
+      }
+    }
+
+    .tab-content {
+      padding: 0 8px;
+    }
+  }
+
+  // Deposit Address Section
+  .deposit-address-section {
+    .address-card {
+      border-radius: 12px;
+      border: 2px solid #1890ff;
+      background: linear-gradient(135deg, rgba(24, 144, 255, 0.05) 0%, rgba(24, 144, 255, 0.02) 100%);
+
+      .address-container {
+        .address-info {
+          .address-display {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0;
+
+            .address-input {
+              flex: 1;
+              font-family: 'Courier New', monospace;
+              font-size: 1rem;
+              background: white;
+              border: 1px solid #d9d9d9;
+              border-radius: 8px;
+
+              .ant-input {
+                font-family: 'Courier New', monospace;
+              }
+            }
+
+            .copy-button {
+              border-radius: 8px;
+              height: 40px;
+              font-weight: 500;
+              box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+              }
+            }
+          }
+
+          .address-note {
+            font-size: 0.9rem;
+            display: block;
+            margin-top: 8px;
+          }
+        }
+      }
+    }
+  }
+
+  // Withdrawal Settings Section
+  .withdrawal-settings-section {
+    .settings-card {
+      border-radius: 12px;
+      border: 2px dotted rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.02);
+
+      .setting-item {
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .setting-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+
+        .ant-input,
+        .ant-select {
+          margin-top: 8px;
+          border-radius: 8px;
+        }
+
+        .ant-switch {
+          &.ant-switch-checked {
+            background-color: #1890ff;
+          }
+        }
+      }
+
+      .bank-details,
+      .crypto-details {
+        padding: 16px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+        margin-top: 16px;
+
+        h5 {
+          margin-bottom: 16px;
+          color: #1890ff;
+        }
+      }
+    }
+  }
+
+  // History Section
+  .history-section {
+    .history-table {
+      border-radius: 12px;
+      overflow: hidden;
+
+      .ant-table {
+        border-radius: 12px;
+
+        .ant-table-thead > tr > th {
+          background: #fafafa;
+          font-weight: 600;
+          border-bottom: 2px solid #f0f0f0;
+        }
+
+        .ant-table-tbody > tr {
+          &:hover {
+            background: rgba(24, 144, 255, 0.05);
+          }
+
+          > td {
+            border-bottom: 1px solid #f0f0f0;
+          }
+        }
+      }
+
+      .ant-tag {
+        border-radius: 6px;
+        font-weight: 500;
+        padding: 4px 8px;
+
+        &.ant-tag-success {
+          background: #f6ffed;
+          border-color: #b7eb8f;
+          color: #52c41a;
+        }
+
+        &.ant-tag-processing {
+          background: #e6f7ff;
+          border-color: #91d5ff;
+          color: #1890ff;
+        }
+
+        &.ant-tag-error {
+          background: #fff2f0;
+          border-color: #ffccc7;
+          color: #ff4d4f;
+        }
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .page-header,
+    .stats-section,
+    .main-card {
+      padding: 0 16px;
+    }
+
+    .main-card {
+      margin: 0 16px 32px;
+    }
+
+    .page-title {
+      font-size: 2rem !important;
+    }
+
+    .address-display {
+      flex-direction: column !important;
+
+      .copy-button {
+        width: 100%;
+      }
+    }
+
+    .setting-header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 8px;
+    }
+
+    .history-table {
+      .ant-table {
+        font-size: 0.9rem;
+
+        .ant-table-thead > tr > th,
+        .ant-table-tbody > tr > td {
+          padding: 8px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-title {
+      font-size: 1.5rem !important;
+    }
+
+    .stats-section {
+      .stat-card {
+        height: 120px;
+      }
+    }
+
+    .deposit-tabs {
+      .ant-tabs-nav {
+        .ant-tabs-tab {
+          padding: 8px 12px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deposits-withdrawals {
+  .stat-card,
+  .address-card,
+  .settings-card,
+  .history-table {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .address-card {
+    animation-delay: 0.2s;
+  }
+
+  .settings-card {
+    animation-delay: 0.4s;
+  }
+
+  .history-table {
+    animation-delay: 0.6s;
+  }
+}
