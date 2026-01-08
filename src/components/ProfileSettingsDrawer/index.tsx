@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Drawer, Form, Input, Button, Avatar, Upload, Space, Typography, Switch, Tabs, Divider, Card, Badge, Tooltip, Alert, List, Tag, Select, Collapse, Modal } from "antd";
+import { Drawer, Form, Input, Button, Avatar, Upload, Space, Typography, Switch, Tabs, Divider, Card, Badge, Tooltip, Alert, List, Tag, Select, Collapse, Modal, Spin } from "antd";
 import { UserOutlined, LinkOutlined, GoogleOutlined, MessageOutlined, AlertFilled, WarningTwoTone, WarningFilled, CheckCircleFilled, CaretRightOutlined, WalletOutlined, WarningOutlined, MailOutlined, PhoneOutlined, SafetyOutlined, MobileOutlined, QrcodeOutlined, WhatsAppOutlined, CopyOutlined } from "@ant-design/icons";
 import { User, authAPI } from '../../services/api';
 import { FileHandler } from '../../utils/FileHandler';
@@ -40,6 +40,16 @@ interface ProfileSettingsDrawerProps {
 export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSettingsDrawerProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [modificationRequestStatus, setModificationRequestStatus] = useState<'idle' | 'loading' | 'pending'>('idle');
+  
+  const handleRequestModification = () => {
+    setModificationRequestStatus('loading');
+    
+    // Simulate API call for 3 seconds
+    setTimeout(() => {
+      setModificationRequestStatus('pending');
+    }, 3000);
+  };
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileImageData, setProfileImageData] = useState<{
     base64: string;
@@ -252,14 +262,9 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
   // Initialize form with user data
   useEffect(() => {
     if (user) {
-      form.setFieldsValue({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        displayName: user.displayName,
-        username: user.username,
-        email: user.email,
-        phoneNumber: user.phoneNumber
-      });
+      console.log('ProfileSettingsDrawer - User data:', user);
+      console.log('ProfileSettingsDrawer - Phone number:', user.phoneNumber);
+      form.setFieldsValue(user);
       
       // Set profile image from user's photoURL if available
       if (user.accounts?.firebase?.photoURL) {
@@ -1247,9 +1252,51 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
                         placeholder="772890123"
                         prefix={<PhoneOutlined />}
                         disabled={true}
+                        value={form.getFieldValue('phoneNumber')}
                       />
                     </Input.Group>
                   </Form.Item>
+
+                  <Alert
+                    message={
+                      modificationRequestStatus === 'pending' 
+                        ? "Request Pending Authorization"
+                        : "Request Profile Modifications"
+                    }
+                    description={
+                      <div>
+                        {modificationRequestStatus === 'idle' && (
+                          <>
+                            <p>To modify your email address, username, or phone number, you need to submit a request for approval.</p>
+                            <Button 
+                              block
+                              type="primary"
+                              style={{ 
+                                backgroundColor: '#fa8c16',
+                                borderColor: '#fa8c16',
+                                marginTop: '12px'
+                              }}
+                              onClick={handleRequestModification}
+                            >
+                              Request Modification
+                            </Button>
+                          </>
+                        )}
+                        {modificationRequestStatus === 'loading' && (
+                          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                            <Spin size="large" />
+                            <p style={{ marginTop: '16px', marginBottom: 0 }}>Submitting your request...</p>
+                          </div>
+                        )}
+                        {modificationRequestStatus === 'pending' && (
+                          <p>Your modification request has been submitted and is pending authorization. You will be notified once it's approved.</p>
+                        )}
+                      </div>
+                    }
+                    type={modificationRequestStatus === 'pending' ? 'info' : 'warning'}
+                    showIcon
+                    style={{ marginBottom: '24px' }}
+                  />
 
                   <Form.Item style={{ marginTop: '32px' }}>
                     <div style={{ display: 'flex', gap: '12px', width: '100%' }}>

@@ -24,12 +24,12 @@ export function Navigation() {
   const navItems: NavItem[] = [
     {
       id: 'home',
-      path: '/discover',
+      path: '/home',
       label: 'Home',
       icon: <StandaloneHouseBlankBoldIcon  className="app-navigation__icon bot-icon" />
     },
     {
-      id: 'strategies',
+      id: 'discover',
       path: '/discover',
       label: 'Strategies',
       icon: <LabelPairedPuzzleLgFillIcon  className="app-navigation__icon" />

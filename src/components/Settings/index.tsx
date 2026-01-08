@@ -5,8 +5,8 @@ import { BottomActionSheet } from "../BottomActionSheet";
 import { ProfileSettingsDrawer } from "../ProfileSettingsDrawer";
 import { PasswordSettingsDrawer } from "../PasswordSettingsDrawer";
 import { LinkedAccountsSettingsDrawer } from "../LinkedAccountsSettingsDrawer";
-import TwoFASettingsDrawer from "../2FASettingsDrawer";
-import TokensSettingsDrawer from "../TokensSettingsDrawer";
+import {TwoFASettingsDrawer} from "../2FASettingsDrawer";
+import {TokensSettingsDrawer} from "../TokensSettingsDrawer";
 
 import {
   LegacyOpenLink2pxIcon,
@@ -444,6 +444,7 @@ export function Settings() {
       <TwoFASettingsDrawer
         visible={twoFADrawerVisible}
         onClose={() => setTwoFADrawerVisible(false)}
+        user={user}
       />
 
       {/* Tokens Settings Drawer */}
