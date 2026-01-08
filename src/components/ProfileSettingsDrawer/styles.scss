@@ -10,6 +10,11 @@
     .ant-collapse-item {
       .ant-collapse-header {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
         
         &:hover {
           background-color: #f0f8ff;
@@ -18,11 +23,19 @@
         .ant-collapse-expand-icon {
           transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
+        .ant-collapse-header-text {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          min-height: 32px;
+        }
       }
       
       .ant-collapse-content {
         .ant-collapse-content-box {
           animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 16px;
         }
       }
       

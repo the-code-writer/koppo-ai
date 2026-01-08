@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Drawer, Form, Input, Button, Avatar, Upload, Space, Typography, Switch, Tabs, Divider, Card, Badge, Tooltip, Alert, List, Tag, Select, Collapse, Modal } from "antd";
 import { UserOutlined, LinkOutlined, GoogleOutlined, MessageOutlined, AlertFilled, WarningTwoTone, WarningFilled, CheckCircleFilled, CaretRightOutlined, WalletOutlined, WarningOutlined, MailOutlined, PhoneOutlined, SafetyOutlined, MobileOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { User, authAPI } from '../../services/api';
@@ -92,6 +92,33 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [twoFactorMethod, setTwoFactorMethod] = useState<'sms' | 'authenticator' | null>(null);
   const [active2FAKey, setActive2FAKey] = useState<string | string[]>([]);
+  
+  // SMS Input Refs
+  const smsInputRef = useRef<any>(null);
+  
+  // SMS Code Handlers
+  const handleSMSCodeChange = (index: number, value: string) => {
+    const newCode = [...smsCode];
+    newCode[index] = value.replace(/\D/g, '');
+    setSmsCode(newCode);
+    
+    // Auto-focus next input
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`sms-input-${index + 1}`);
+      if (nextInput) {
+        (nextInput as HTMLInputElement).focus();
+      }
+    }
+  };
+  
+  const handleSMSCodeKeyDown = (index: number, key: string) => {
+    if (key === 'Backspace' && !smsCode[index] && index > 0) {
+      const prevInput = document.getElementById(`sms-input-${index - 1}`);
+      if (prevInput) {
+        (prevInput as HTMLInputElement).focus();
+      }
+    }
+  };
   // Connected Accounts State
   const [connectedAccounts, setConnectedAccounts] = useState([
     {
@@ -618,7 +645,7 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
 
       // Create SMS session
       const sessionId = `sms_${user.id}_${Date.now()}`;
-      const session = new SMSVerificationSession();
+      const session = SMSVerificationSession.getInstance();
       const { code, expiresAt } = session.createSession(sessionId, user.phoneNumber);
 
       // Send SMS
@@ -635,7 +662,15 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
         // Start countdown timer
         startResendCountdown();
         
-        console.log('SMS sent successfully to:', SMSAuthenticator.maskPhoneNumber(user.phoneNumber));
+        // Reset SMS code inputs
+        setSmsCode(['', '', '', '', '', '']);
+        setSmsVerificationCode('');
+        
+        // Log the code to console for testing
+        console.log('🔢 SMS Verification Code:', code);
+        console.log('⏰ Code expires at:', new Date(expiresAt).toLocaleTimeString());
+        console.log('📱 Phone:', SMSAuthenticator.maskPhoneNumber(user.phoneNumber));
+        console.log('✅ SMS code sent successfully');
       } else {
         throw new Error('Failed to send SMS');
       }
@@ -648,40 +683,62 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
   };
 
   const handleVerifySMS = async () => {
-    if (!smsVerificationCode || !smsSessionId) {
-      console.error('Missing verification code or session');
+    // Combine the 6-digit code from input fields
+    const enteredCode = smsCode.join('');
+    
+    console.log('🔍 DEBUG - Verification Attempt:');
+    console.log('📝 Entered code:', enteredCode);
+    console.log('🆔 Session ID:', smsSessionId);
+    console.log('⏰ Current time:', new Date().toLocaleTimeString());
+    console.log('⏰ Expires at:', smsCodeExpiresAt ? new Date(smsCodeExpiresAt).toLocaleTimeString() : 'Not set');
+    
+    if (!enteredCode || !smsSessionId) {
+      console.error('❌ Missing verification code or session');
       return;
     }
 
     // Check if code has expired
     if (smsCodeExpiresAt && Date.now() > smsCodeExpiresAt) {
+      console.log('⏰ Code expired at:', new Date(smsCodeExpiresAt).toLocaleTimeString());
+      console.log('🕐 Current time:', new Date().toLocaleTimeString());
       alert('Verification code has expired. Please request a new code.');
       return;
     }
 
     setSmsLoading(true);
     try {
-      const session = new SMSVerificationSession();
-      const isValid = session.verifyCode(smsSessionId, smsVerificationCode);
+      const session = SMSVerificationSession.getInstance();
+      
+      // Debug: Check if session exists
+      console.log('🔍 DEBUG - Using SMSVerificationSession singleton instance');
+      console.log('🔍 DEBUG - Session Map size before verification:', (session as any).sessions?.size || 'N/A');
+      
+      const isValid = session.verifyCode(smsSessionId, enteredCode);
+
+      console.log('🔍 DEBUG - Verification result:', isValid);
+      console.log('🔍 DEBUG - Session Map size after verification:', (session as any).sessions?.size || 'N/A');
 
       if (isValid) {
         // TODO: Save to backend
-        console.log('SMS authentication setup successful!');
+        console.log('🎉 SMS authentication setup successful!');
         setTwoFactorMethod('sms');
         setTwoFactorEnabled(true);
         setSmsSetupStep('setup');
+        setSmsCode(['', '', '', '', '', '']);
         setSmsVerificationCode('');
         setSmsSessionId('');
         setSmsCodeExpiresAt(0);
         setSmsResendAvailable(true);
         setSmsResendCountdown(0);
+        
+        alert('SMS authentication enabled successfully!');
       } else {
-        console.error('Invalid verification code');
+        console.log('❌ Invalid verification code');
         alert('Invalid verification code. Please try again.');
       }
     } catch (error) {
-      console.error('Failed to verify SMS:', error);
-      alert('Failed to verify SMS code. Please try again.');
+      console.error('Error verifying SMS code:', error);
+      alert('Failed to verify code. Please try again.');
     } finally {
       setSmsLoading(false);
     }
@@ -695,7 +752,7 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
 
     setSmsLoading(true);
     try {
-      const session = new SMSVerificationSession();
+      const session = SMSVerificationSession.getInstance();
       const result = session.resendCode(smsSessionId);
 
       if (result) {
@@ -1435,7 +1492,6 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: 12,
-                            padding: '12px 0',
                             transition: 'all 0.3s ease'
                           }}>
                             <MobileOutlined style={{ 
@@ -1462,180 +1518,185 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
                         ),
                         children: (
                           <div>
-                            <Alert
-                              message="SMS Authentication"
-                              description="Receive verification codes via SMS to secure your account."
-                              type="info"
-                              showIcon
-                              style={{ marginBottom: 16 }}
-                            />
+                            {/* Default State */}
+                            <div 
+                              style={{
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                opacity: smsSetupStep === 'setup' ? 1 : 0,
+                                transform: smsSetupStep === 'setup' ? 'translateY(0)' : 'translateY(-20px)',
+                                pointerEvents: smsSetupStep === 'setup' ? 'auto' : 'none',
+                                position: smsSetupStep === 'setup' ? 'relative' : 'absolute',
+                                width: '100%'
+                              }}
+                            >
+                              <Alert
+                                message="SMS Authentication"
+                                description="Receive verification codes via SMS to secure your account."
+                                type="info"
+                                showIcon
+                                style={{ marginBottom: 16 }}
+                              />
 
-                            <div style={{ marginBottom: 16 }}>
-                              <Text strong>Phone Number:</Text>
-                              <div style={{ marginTop: 8, fontSize: 16, color: '#1890ff' }}>
-                                {user?.phoneNumber ? SMSAuthenticator.maskPhoneNumber(user.phoneNumber) : 'No phone number set'}
+                              <div style={{ marginBottom: 16 }}>
+                                <Text strong>Phone Number:</Text>
+                                <div style={{ marginTop: 8, fontSize: 16, color: '#1890ff' }}>
+                                  {user?.phoneNumber ? SMSAuthenticator.maskPhoneNumber(user.phoneNumber) : 'No phone number set'}
+                                </div>
                               </div>
+
+                              {!twoFactorMethod || twoFactorMethod !== 'sms' ? (
+                                <Button 
+                                  type="primary" 
+                                  size="large"
+                                  onClick={handleSetupSMS}
+                                  loading={smsLoading}
+                                  disabled={!user?.phoneNumber}
+                                >
+                                  Setup SMS Authentication
+                                </Button>
+                              ) : (
+                                <div>
+                                  <Alert
+                                    message="SMS Authentication Enabled"
+                                    description="Your account is protected with SMS verification codes."
+                                    type="success"
+                                    showIcon
+                                    style={{ marginBottom: 16 }}
+                                  />
+                                  <Space>
+                                    <Button 
+                                      type="default" 
+                                      size="large"
+                                      onClick={handleCancelSMSSetup}
+                                    >
+                                      Disable SMS
+                                    </Button>
+                                  </Space>
+                                </div>
+                              )}
                             </div>
 
-                            {!twoFactorMethod || twoFactorMethod !== 'sms' ? (
-                              <Button 
-                                type="primary" 
-                                size="large"
-                                onClick={handleSetupSMS}
-                                loading={smsLoading}
-                                disabled={!user?.phoneNumber}
-                              >
-                                Setup SMS Authentication
-                              </Button>
-                            ) : (
-                              <div>
-                                <Alert
-                                  message="SMS Authentication Enabled"
-                                  description="Your account is protected with SMS verification codes."
-                                  type="success"
-                                  showIcon
-                                  style={{ marginBottom: 16 }}
-                                />
-                                <Space>
-                                  <Button 
-                                    type="default" 
-                                    size="large"
-                                    onClick={handleCancelSMSSetup}
-                                  >
-                                    Disable SMS
-                                  </Button>
-                                </Space>
-                              </div>
-                            )}
-
-                            {/* SMS Setup Modal */}
-                            {twoFactorMethod === 'sms' && smsSetupStep === 'verify' && (
-                              <Card size="small" style={{ marginTop: 16 }}>
-                                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                                  <div style={{ 
-                                    backgroundColor: '#e6f7ff', 
-                                    border: '1px solid #91d5ff',
-                                    borderRadius: 8,
-                                    padding: 20,
-                                    marginBottom: 24
+                            {/* Verification State */}
+                            <div 
+                              style={{
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                opacity: smsSetupStep === 'verify' ? 1 : 0,
+                                transform: smsSetupStep === 'verify' ? 'translateY(0)' : 'translateY(20px)',
+                                pointerEvents: smsSetupStep === 'verify' ? 'auto' : 'none',
+                                position: smsSetupStep === 'verify' ? 'relative' : 'absolute',
+                                width: '100%',
+                                minHeight: '300px'
+                              }}
+                            >
+                              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                <div style={{ 
+                                  marginBottom: 20,
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  alignItems: 'center'
+                                }}>
+                                  <div style={{
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: '50%',
+                                    background: '#e6f7ff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: 8
                                   }}>
-                                    <MobileOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: 12 }} />
-                                    <div style={{ fontSize: 18, fontWeight: 'bold', color: '#1890ff', marginBottom: 8 }}>
-                                      Verification Code Sent
-                                    </div>
-                                    <div style={{ fontSize: 14, color: '#595959' }}>
-                                      We've sent a 6-digit verification code to:
-                                    </div>
-                                    <div style={{ 
-                                      marginTop: 8,
-                                      fontSize: 16,
-                                      fontWeight: 'bold',
-                                      color: '#1890ff'
-                                    }}>
-                                      {user?.phoneNumber ? SMSAuthenticator.maskPhoneNumber(user.phoneNumber) : 'Your phone number'}
-                                    </div>
+                                    <MobileOutlined style={{ fontSize: 24, color: '#1890ff' }} />
                                   </div>
+                                </div>
 
-                                  <div style={{ marginBottom: 20 }}>
-                                    <Text strong style={{ fontSize: 16 }}>Enter verification code:</Text>
-                                    <div style={{ 
-                                      display: 'flex', 
-                                      gap: 8, 
-                                      justifyContent: 'center',
-                                      marginTop: 16,
-                                      maxWidth: 320,
-                                      margin: '16px auto 0'
-                                    }}>
-                                      {[0, 1, 2, 3, 4, 5].map((index) => (
-                                        <Input
-                                          key={index}
-                                          size="large"
-                                          maxLength={1}
-                                          value={smsVerificationCode[index] || ''}
-                                          onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, '');
-                                            const newCode = smsVerificationCode.split('');
-                                            newCode[index] = value;
-                                            const updatedCode = newCode.join('');
-                                            setSmsVerificationCode(updatedCode);
-                                            
-                                            // Auto-focus next input
-                                            if (value && index < 5) {
-                                              const nextInput = document.getElementById(`sms-input-${index + 1}`);
-                                              if (nextInput) {
-                                                (nextInput as HTMLInputElement).focus();
-                                              }
-                                            }
-                                          }}
-                                          onKeyDown={(e) => {
-                                            // Handle backspace to go to previous input
-                                            if (e.key === 'Backspace' && !smsVerificationCode[index] && index > 0) {
-                                              const prevInput = document.getElementById(`sms-input-${index - 1}`);
-                                              if (prevInput) {
-                                                (prevInput as HTMLInputElement).focus();
-                                              }
-                                            }
-                                          }}
-                                          id={`sms-input-${index}`}
-                                          style={{ 
-                                            width: 40, 
-                                            height: 48,
-                                            textAlign: 'center',
-                                            fontSize: 18,
-                                            fontWeight: 'bold'
-                                          }}
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
+                                <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+                                  Verification Code Sent
+                                </Title>
+                                
+                                <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 16 }}>
+                                  We've sent a 6-digit verification code to your phone number
+                                </Text>
+                                
+                                <Text strong style={{ fontSize: 16, color: '#1890ff', display: 'block', marginBottom: 20 }}>
+                                  {user?.phoneNumber ? SMSAuthenticator.maskPhoneNumber(user.phoneNumber) : 'Your phone'}
+                                </Text>
 
-                                  <div style={{ marginBottom: 20 }}>
-                                    <Text type="secondary" style={{ fontSize: 14 }}>
-                                      Code expires in: {smsCodeExpiresAt ? SMSAuthenticator.formatRemainingTime(smsCodeExpiresAt) : 'Loading...'}
-                                    </Text>
-                                  </div>
+                                <div style={{ marginBottom: 20 }}>
+                                  <Space size={8}>
+                                    {smsCode.map((digit, index) => (
+                                      <Input
+                                        key={index}
+                                        id={`sms-input-${index}`}
+                                        ref={index === 0 ? smsInputRef : null}
+                                        type="text"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleSMSCodeChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleSMSCodeKeyDown(index, e.key)}
+                                        style={{
+                                          width: 45,
+                                          height: 45,
+                                          textAlign: 'center',
+                                          fontSize: 18,
+                                          fontWeight: 'bold',
+                                          borderRadius: '8px',
+                                          border: '2px solid #d9d9d9',
+                                          transition: 'all 0.3s ease'
+                                        }}
+                                      />
+                                    ))}
+                                  </Space>
+                                </div>
 
-                                  <div style={{ marginBottom: 20 }}>
-                                    <Space size="large">
+                                <div style={{ marginBottom: 20 }}>
+                                  <Text type="secondary" style={{ fontSize: 14 }}>
+                                    Code expires in: {smsCodeExpiresAt ? SMSAuthenticator.formatRemainingTime(smsCodeExpiresAt) : 'Loading...'}
+                                  </Text>
+                                </div>
+
+                                <div style={{ marginBottom: 20 }}>
+                                  <Space size="large">
+                                    {smsCodeExpiresAt && Date.now() > smsCodeExpiresAt ? (
+                                      <Button 
+                                        type="primary" 
+                                        size="large"
+                                        onClick={handleSetupSMS}
+                                        loading={smsLoading}
+                                        style={{ minWidth: 120 }}
+                                      >
+                                        Resend Code
+                                      </Button>
+                                    ) : (
                                       <Button 
                                         type="primary" 
                                         size="large"
                                         onClick={handleVerifySMS}
                                         loading={smsLoading}
-                                        disabled={smsVerificationCode.length !== 6}
-                                        style={{ minWidth: 100 }}
+                                        style={{ minWidth: 120 }}
                                       >
                                         Verify
                                       </Button>
-                                      <Button 
-                                        size="large"
-                                        onClick={handleResendSMS}
-                                        loading={smsLoading}
-                                        disabled={!smsResendAvailable}
-                                        style={{ minWidth: 100 }}
-                                      >
-                                        {smsResendAvailable ? 'Resend Code' : `Resend (${smsResendCountdown}s)`}
-                                      </Button>
-                                      <Button 
-                                        size="large"
-                                        onClick={handleCancelSMSSetup}
-                                        style={{ minWidth: 100 }}
-                                      >
-                                        Cancel
-                                      </Button>
-                                    </Space>
-                                  </div>
-
-                                  <div style={{ fontSize: 12, color: '#8c8c8c' }}>
-                                    <Text type="secondary">
-                                      Didn't receive the code? Check your spam folder or make sure your phone number is correct.
-                                    </Text>
-                                  </div>
+                                    )}
+                                    <Button 
+                                      type="default" 
+                                      size="large"
+                                      onClick={handleCancelSMSSetup}
+                                      style={{ minWidth: 100 }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </Space>
                                 </div>
-                              </Card>
-                            )}
+
+                                <div style={{ fontSize: 12, color: '#8c8c8c' }}>
+                                  <Text type="secondary">
+                                    Didn't receive the code? Check your spam folder or make sure your phone number is correct.
+                                  </Text>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        )
+                        ),
                       },
                       {
                         key: 'authenticator',
@@ -1644,7 +1705,6 @@ export function ProfileSettingsDrawer({ visible, onClose, user }: ProfileSetting
                             display: 'flex', 
                             alignItems: 'center', 
                             gap: 12,
-                            padding: '12px 0',
                             transition: 'all 0.3s ease'
                           }}>
                             <QrcodeOutlined style={{ 

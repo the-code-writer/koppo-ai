@@ -214,6 +214,7 @@ export class SMSAuthenticator {
  * SMS Verification Session Manager
  */
 export class SMSVerificationSession {
+  private static instance: SMSVerificationSession;
   private sessions: Map<string, {
     code: string;
     expiresAt: number;
@@ -221,6 +222,15 @@ export class SMSVerificationSession {
     attemptCount: number;
     lastSentTime: number;
   }> = new Map();
+
+  private constructor() {}
+
+  static getInstance(): SMSVerificationSession {
+    if (!SMSVerificationSession.instance) {
+      SMSVerificationSession.instance = new SMSVerificationSession();
+    }
+    return SMSVerificationSession.instance;
+  }
 
   /**
    * Create a new SMS verification session
