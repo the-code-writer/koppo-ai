@@ -1,7 +1,7 @@
 import { Bot } from '../hooks/useBots';
 
 // Field types
-export type FieldType = 'text' | 'number' | 'number-prefix' | 'select' | 'duration-selector' | 'profit-threshold' | 'threshold-selector' | 'heading' | 'duration-selector-with-heading' | 'risk-management' | 'schedules';
+export type FieldType = 'text' | 'number' | 'number-prefix' | 'select' | 'duration-selector' | 'profit-threshold' | 'threshold-selector' | 'heading' | 'duration-selector-with-heading' | 'risk-management' | 'schedules' | 'switch-with-helper' | 'recovery-type' | 'cooldown-period' | 'max-trades-control' | 'trade-interval';
 export type PrefixType = 'currency' | 'percentage' | 'multiplier';
 
 // Tab configuration
@@ -37,5 +37,5 @@ export interface StrategyFormProps {
 
 // Base form values that all forms can extend
 export interface FormValues {
-  [key: string]: string | number | object | undefined;
+  [key: string]: string | number | object | boolean | undefined;
 }

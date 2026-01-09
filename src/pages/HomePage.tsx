@@ -1,7 +1,7 @@
-import { HomeScreen } from "../components/HomeScreen";
+import { HomeScreen2 } from "../components/HomeScreen2";
 
 const HomePage = () => {
-  return <HomeScreen />;
+  return <HomeScreen2 />;
 };
 
 export default HomePage;

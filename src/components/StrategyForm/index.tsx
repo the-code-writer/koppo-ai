@@ -1,4 +1,4 @@
-import { Form, Button, Segmented, Select, Tabs, Typography, Card } from "antd";
+import { Form, Button, Segmented, Select, Tabs, Typography, Card, Switch, Flex } from "antd";
 import { BottomActionSheet } from "../BottomActionSheet";
 import { DownOutlined } from "@ant-design/icons";
 import { InputField } from "../InputField";
@@ -11,7 +11,7 @@ import {
   LabelPairedCircleQuestionMdBoldIcon,
   MarketDerivedVolatility1001sIcon,
 } from "@deriv/quill-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, useBots } from "../../hooks/useBots";
 import { TradeErrorBoundary } from "../ErrorBoundary/TradeErrorBoundary";
@@ -20,6 +20,38 @@ import MarketSelector from "../MarketSelector";
 import "./styles.scss";
 
 import { FormValues, StrategyFormProps, FieldConfig } from "../../types/form";
+
+// Interface for the structured strategy form data
+interface StrategyFormData {
+  general: {
+    botName: string;
+    tradeType: string;
+    market: string;
+  };
+  basicSettings: {
+    number_of_trades: number | null;
+    maximum_stake: number | null;
+    tick_duration: unknown;
+    compound_stake: boolean;
+  };
+  amounts: {
+    amount: unknown;
+    profit_threshold: unknown;
+    loss_threshold: unknown;
+  };
+  recovery: {
+    risk_steps: unknown;
+  };
+  schedules: {
+    bot_schedules: unknown;
+  };
+  execution: {
+    recovery_type: string | null;
+    cooldown_period: { duration: number; unit: string } | null;
+    stop_on_loss_streak: boolean;
+    auto_restart: boolean;
+  };
+}
 
 export function StrategyForm({
   config,
@@ -39,11 +71,65 @@ export function StrategyForm({
 
   const { Title } = Typography;
 
+  // Function to build the structured form data object
+  const buildStructuredFormData = useCallback((): StrategyFormData => {
+    const values = form.getFieldsValue();
+    
+    const structuredData: StrategyFormData = {
+      general: {
+        botName: values.botName?.toString() || '',
+        tradeType: values.tradeType?.toString() || '',
+        market: values.market?.toString() || '',
+      },
+      basicSettings: {
+        number_of_trades: values.number_of_trades as number | null,
+        maximum_stake: values.maximum_stake as number | null,
+        tick_duration: values.tick_duration,
+        compound_stake: values.compound_stake as boolean || false,
+      },
+      amounts: {
+        amount: values.amount,
+        profit_threshold: values.profit_threshold,
+        loss_threshold: values.loss_threshold,
+      },
+      recovery: {
+        risk_steps: values.risk_steps,
+      },
+      schedules: {
+        bot_schedules: values.bot_schedules,
+      },
+      execution: {
+        recovery_type: values.recovery_type as string | null,
+        cooldown_period: values.cooldown_period as { duration: number; unit: string } | null,
+        stop_on_loss_streak: values.stop_on_loss_streak as boolean || false,
+        auto_restart: values.auto_restart as boolean || false,
+      },
+    };
+
+    return structuredData;
+  }, [form]);
+
+  // Helper function to log field updates
+  const logFieldUpdate = useCallback((fieldName: string, value: unknown, tabKey?: string) => {
+    console.log(`[Form Update] ${tabKey ? `[${tabKey}] ` : ''}${fieldName}:`, value);
+    const structuredData = buildStructuredFormData();
+    console.log("+++ FORM", structuredData);
+  }, [buildStructuredFormData]);
+
+  // Log the full structured form data
+  const logFullFormData = useCallback(() => {
+    const rawValues = form.getFieldsValue();
+    const structuredData = buildStructuredFormData();
+    console.log('[Form Data - Raw Values]', rawValues);
+    console.log('[Form Data - Full Structure]', JSON.stringify(structuredData, null, 2));
+    console.log('[Form Data - Object]', structuredData);
+    return structuredData;
+  }, [buildStructuredFormData, form]);
+
   useEffect(()=>{
-
-    console.log("+++ FORM", form)
-
-  },[form])
+    const structuredData = buildStructuredFormData();
+    console.log("+++ FORM", structuredData);
+  },[form, buildStructuredFormData])
 
 // Render field based on type
   const renderField = (field: FieldConfig) => {
@@ -72,14 +158,20 @@ export function StrategyForm({
       case 'risk-management':
         return (
           <RiskManagement
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'recovery');
+            }}
           />
         );
       
       case 'schedules':
         return (
           <Schedules
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'schedules');
+            }}
           />
         );
       
@@ -91,7 +183,10 @@ export function StrategyForm({
             </Title>
             <div className="duration-selector-in-card">
               <DurationSelector
-                onChange={(value) => form.setFieldValue(field.name, value)}
+                onChange={(value) => {
+                  form.setFieldValue(field.name, value);
+                  logFieldUpdate(field.name, value, 'basicSettings');
+                }}
               />
             </div>
           </Card>
@@ -101,14 +196,20 @@ export function StrategyForm({
         return (
           <DurationSelector
             {...commonProps}
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'basicSettings');
+            }}
           />
         );
       
       case 'profit-threshold':
         return (
           <ProfitThreshold
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'amounts');
+            }}
           />
         );
       
@@ -116,7 +217,10 @@ export function StrategyForm({
         return (
           <ThresholdSelector
             label={field.label}
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'amounts');
+            }}
             fixedPlaceholder={field.name === 'amount' ? 'Enter base stake amount' : 'Enter fixed loss amount'}
             percentagePlaceholder={field.name === 'amount' ? 'Enter percentage of balance for stake' : 'Enter percentage of balance for loss'}
             fixedHelperText={field.name === 'amount' ? 'Enter the base stake amount for trading' : 'Enter a fixed amount that will trigger loss prevention when reached'}
@@ -131,7 +235,10 @@ export function StrategyForm({
             <Select
               placeholder={commonProps.placeholder}
               options={field.options}
-              onChange={(value) => form.setFieldValue(field.name, value)}
+              onChange={(value) => {
+                form.setFieldValue(field.name, value);
+                logFieldUpdate(field.name, value);
+              }}
               style={{ width: '100%' }}
               size="large"
             />
@@ -146,7 +253,10 @@ export function StrategyForm({
             suffix={field.prefixType === 'currency' ? '$' : 
                    field.prefixType === 'percentage' ? '%' :
                    field.prefixType === 'multiplier' ? '×' : ''}
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'basicSettings');
+            }}
           />
         );
       
@@ -155,8 +265,161 @@ export function StrategyForm({
           <InputField
             {...commonProps}
             type="number"
-            onChange={(value) => form.setFieldValue(field.name, value)}
+            onChange={(value) => {
+              form.setFieldValue(field.name, value);
+              logFieldUpdate(field.name, value, 'basicSettings');
+            }}
           />
+        );
+      
+      case 'switch-with-helper':
+        return (
+          <Flex justify="space-between" align="center" >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{field.label}</span>
+            </div>
+            <Switch 
+              onChange={(value) => {
+                form.setFieldValue(field.name, value);
+                logFieldUpdate(field.name, value, 'execution');
+              }}
+            />
+          </Flex>
+        );
+      
+      case 'recovery-type':
+        return (
+          <Card className="field-heading" size="small">
+            <div className="field-label-row">
+              <Title level={4} className="heading-title">{field.label}</Title>
+            </div>
+            <Segmented
+              block
+              options={[
+                { label: 'Conservative', value: 'conservative' },
+                { label: 'Neutral', value: 'neutral' },
+                { label: 'Aggressive', value: 'aggressive' },
+              ]}
+              onChange={(value) => {
+                form.setFieldValue(field.name, value);
+                logFieldUpdate(field.name, value, 'execution');
+              }}
+            />
+            <div className="recovery-type-description">
+              <span className="description-text">
+                Controls how quickly the bot recovers from losses
+              </span>
+            </div>
+          </Card>
+        );
+      
+      case 'cooldown-period':
+        return (
+          <Card className="field-heading" size="small">
+            <div className="field-label-row">
+              <Title level={4} className="heading-title">{field.label}</Title>
+            </div>
+            <Flex justify="space-between" align="center" gap={12} >
+              <InputField
+                type="number"
+                placeholder="Duration"
+                onChange={(value) => {
+                  const newValue = { duration: value, unit: form.getFieldValue(field.name)?.unit || 'seconds' };
+                  form.setFieldValue(field.name, newValue);
+                  logFieldUpdate(field.name, newValue, 'execution');
+                }}
+              /><Segmented
+              block
+                    options={[
+                      { label: 'Sec', value: 'seconds' },
+                      { label: 'Min', value: 'minutes' },
+                      { label: 'Hour', value: 'hours' },
+                    ]}
+                    defaultValue="seconds"
+                    onChange={(value) => {
+                      const newValue = { duration: form.getFieldValue(field.name)?.duration || 0, unit: value };
+                      form.setFieldValue(field.name, newValue);
+                      logFieldUpdate(field.name, newValue, 'execution');
+                    }}
+                    className="cooldown-segment"
+                  />
+            </Flex>
+            <div className="cooldown-description">
+              <span className="description-text">
+                Wait time between consecutive trades after a loss
+              </span>
+            </div>
+          </Card>
+        );
+      
+      case 'max-trades-control':
+        return (
+          <div className="max-trades-field">
+            <div className="field-label-row">
+              <span className="field-label">{field.label}</span>
+              <LabelPairedCircleQuestionMdBoldIcon 
+                style={{ fontSize: '14px', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              />
+            </div>
+            <div className="max-trades-controls">
+              <Button 
+                className="stepper-btn"
+                onClick={() => {
+                  const current = form.getFieldValue(field.name) || 1;
+                  if (current > 1) form.setFieldValue(field.name, current - 1);
+                }}
+              >
+                −
+              </Button>
+              <span className="trades-value">{form.getFieldValue(field.name) || 1}</span>
+              <Button 
+                className="stepper-btn"
+                onClick={() => {
+                  const current = form.getFieldValue(field.name) || 1;
+                  form.setFieldValue(field.name, current + 1);
+                }}
+              >
+                +
+              </Button>
+            </div>
+            <div className="max-trades-description">
+              <span className="description-text">
+                Maximum number of trades running at the same time
+              </span>
+            </div>
+          </div>
+        );
+      
+      case 'trade-interval':
+        return (
+          <div className="trade-interval-field">
+            <div className="field-label-row">
+              <span className="field-label">{field.label}</span>
+              <LabelPairedCircleQuestionMdBoldIcon 
+                style={{ fontSize: '14px', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              />
+            </div>
+            <div className="interval-controls">
+              <InputField
+                type="number"
+                placeholder="Enter interval"
+                onChange={(value) => form.setFieldValue(field.name, { interval: value, unit: form.getFieldValue(field.name)?.unit || 'seconds' })}
+              />
+              <Segmented
+                options={[
+                  { label: 'Sec', value: 'seconds' },
+                  { label: 'Min', value: 'minutes' },
+                ]}
+                defaultValue="seconds"
+                onChange={(value) => form.setFieldValue(field.name, { interval: form.getFieldValue(field.name)?.interval || 0, unit: value })}
+              />
+            </div>
+            <div className="interval-description">
+              <span className="description-text">
+                Minimum time between starting new trades
+              </span>
+            </div>
+          </div>
         );
       
       default:
@@ -189,6 +452,10 @@ export function StrategyForm({
   }, [isEditMode, editBot, form]);
 
   const handleSubmit = async (values: FormValues) => {
+    // Log the full structured form data
+    const structuredFormData = logFullFormData();
+    console.log('[Form Submit] Structured Strategy Data:', structuredFormData);
+    
     // for now some values here are static 
     // once we have the api we will make this function dynamic based on the api schema
     // Get the current form values
@@ -286,37 +553,39 @@ export function StrategyForm({
             />
           </Form.Item>
 
-          <h2 className="parameters-title">Parameters</h2>
-
-          <Form.Item name="tradeType" className="trade-type-item">
-            <Segmented
-              block
-              options={[
-                { label: "Rise", value: "Rise" },
-                { label: "Fall", value: "Fall" },
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item name="market" className="market-item">
-                <InputField 
-                  type="selectable" 
-                  value={"Volatility 100 (1s) Index"}
-                  prefix={<MarketDerivedVolatility1001sIcon fill='#000000' iconSize='sm' />}
-                  suffix={<DownOutlined />}
-                  onClick={() => setShowMarketSelector(true)}
-                />
-          </Form.Item>
-
           {/* Render tabbed fields from config */}
           {config?.tabs ? (
             <Tabs
-              defaultActiveKey="basic"
+              defaultActiveKey="advanced"
               items={config.tabs.map((tab) => ({
                 key: tab.key,
                 label: tab.label,
                 children: (
-                  <div className="tab-content fixed-height">
+                  <div className="tab-content fixed-heightx">
+                    {/* Add tradeType and market Form.Items to the first tab (advanced) */}
+                    {tab.key === 'advanced' && (
+                      <>
+                        <Form.Item name="tradeType" className="trade-type-item">
+                          <Segmented
+                            block
+                            options={[
+                              { label: "Rise", value: "Rise" },
+                              { label: "Fall", value: "Fall" },
+                            ]}
+                          />
+                        </Form.Item>
+
+                        <Form.Item name="market" className="market-item">
+                          <InputField 
+                            type="selectable" 
+                            value={"Volatility 100 (1s) Index"}
+                            prefix={<MarketDerivedVolatility1001sIcon fill='#000000' iconSize='sm' />}
+                            suffix={<DownOutlined />}
+                            onClick={() => setShowMarketSelector(true)}
+                          />
+                        </Form.Item>
+                      </>
+                    )}
                     {tab.fields.map((field) => (
                       <Form.Item key={field.name} name={field.name} className={`${field.type}-item`}>
                         {renderField(field)}

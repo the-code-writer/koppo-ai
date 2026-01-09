@@ -73,29 +73,8 @@ export const STRATEGY_PARAMS: Record<string, FormConfig> = {
   'repeat-trade': {
     tabs: [
       {
-        key: 'basic',
-        label: 'Basic Settings',
-        fields: [
-          {
-            name: 'amount',
-            label: 'Initial Amount',
-            type: 'threshold-selector' as FieldType
-          },
-          {
-            name: 'profit_threshold',
-            label: 'Profit Threshold',
-            type: 'profit-threshold' as FieldType
-          },
-          {
-            name: 'loss_threshold',
-            label: 'Loss Threshold',
-            type: 'threshold-selector' as FieldType
-          }
-        ]
-      },
-      {
         key: 'advanced',
-        label: 'Advanced Settings',
+        label: 'Basic Settings',
         fields: [
           {
             name: 'number_of_trades',
@@ -112,6 +91,32 @@ export const STRATEGY_PARAMS: Record<string, FormConfig> = {
             name: 'tick_duration',
             label: 'Ticks Duration',
             type: 'duration-selector-with-heading' as FieldType
+          },
+          {
+            name: 'compound_stake',
+            label: 'Compound stake',
+            type: 'switch-with-helper' as FieldType
+          }
+        ]
+      },
+      {
+        key: 'basic',
+        label: 'Amounts',
+        fields: [
+          {
+            name: 'amount',
+            label: 'Initial Amount',
+            type: 'threshold-selector' as FieldType
+          },
+          {
+            name: 'profit_threshold',
+            label: 'Profit Threshold',
+            type: 'profit-threshold' as FieldType
+          },
+          {
+            name: 'loss_threshold',
+            label: 'Loss Threshold',
+            type: 'threshold-selector' as FieldType
           }
         ]
       },
@@ -141,7 +146,26 @@ export const STRATEGY_PARAMS: Record<string, FormConfig> = {
         key: 'execution',
         label: 'Execution',
         fields: [
-          // Future execution settings can go here
+          {
+            name: 'recovery_type',
+            label: 'Recovery Type',
+            type: 'recovery-type' as FieldType
+          },
+          {
+            name: 'cooldown_period',
+            label: 'Cooldown Period',
+            type: 'cooldown-period' as FieldType
+          },
+          {
+            name: 'stop_on_loss_streak',
+            label: 'Stop on loss streak',
+            type: 'switch-with-helper' as FieldType
+          },
+          {
+            name: 'auto_restart',
+            label: 'Auto restart after cooldown',
+            type: 'switch-with-helper' as FieldType
+          }
         ]
       }
     ]
